@@ -43,7 +43,7 @@ function speak(text) {
 }
 
 // ---------- LETTER SOUNDS ----------
-const letters = "abcdefghijklmnopqrstuvwxyz";const letterSounds = {
+const letters = ;const letterSounds = {
 const letterSounds = {
   a: "ah",
   b: "buh",
