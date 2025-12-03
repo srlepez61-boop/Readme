@@ -1,11 +1,11 @@
 // ---------- VOICE SELECTION ----------
 let voices = [];
-let selectedVoiceName = ""; // default voice
+let selectedVoiceName = "";
 
+const voiceContainer = document.getElementById("voice-container");
 const voiceSelect = document.createElement("select");
 voiceSelect.id = "voice-select";
-voiceSelect.style.marginBottom = "1rem";
-document.body.insertBefore(voiceSelect, document.body.firstChild);
+voiceContainer.appendChild(voiceSelect);
 
 function loadVoices() {
   voices = speechSynthesis.getVoices();
@@ -23,10 +23,7 @@ function loadVoices() {
   }
 }
 
-voiceSelect.onchange = () => {
-  selectedVoiceName = voiceSelect.value;
-};
-
+voiceSelect.onchange = () => { selectedVoiceName = voiceSelect.value; };
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
 
@@ -45,7 +42,6 @@ function speak(text) {
 const letters = "abcdefghijklmnopqrstuvwxyz";
 const letterGrid = document.querySelector(".letter-grid");
 
-// Child-friendly phonetic sounds
 const letterSounds = {
   a: "ah", b: "buh", c: "cuh", d: "duh", e: "eh", f: "fuh",
   g: "guh", h: "huh", i: "ih", j: "juh", k: "kuh", l: "luh",
@@ -61,31 +57,25 @@ letters.split("").forEach(l => {
   letterGrid.appendChild(b);
 });
 
-// ---------- WORD BUILDER WITH LEVELS ----------
+// ---------- WORD BUILDER ----------
 const levels = [
-  [ // Level 1
+  [
     { word: "cat", pic: "🐱" }, { word: "dog", pic: "🐶" }, { word: "sun", pic: "☀️" },
     { word: "bat", pic: "🦇" }, { word: "car", pic: "🚗" }, { word: "cup", pic: "☕" },
     { word: "fox", pic: "🦊" }, { word: "hat", pic: "🎩" }, { word: "pen", pic: "🖊️" },
     { word: "egg", pic: "🥚" }
   ],
-  [ // Level 2
+  [
     { word: "fish", pic: "🐟" }, { word: "book", pic: "📖" }, { word: "star", pic: "⭐" },
     { word: "tree", pic: "🌳" }, { word: "milk", pic: "🥛" }, { word: "cake", pic: "🍰" },
     { word: "lion", pic: "🦁" }, { word: "bear", pic: "🐻" }, { word: "moon", pic: "🌙" },
     { word: "leaf", pic: "🍃" }
-  ],
-  [ // Level 3
-    { word: "bird", pic: "🐦" }, { word: "frog", pic: "🐸" }, { word: "rain", pic: "🌧️" },
-    { word: "ship", pic: "🚢" }, { word: "plane", pic: "✈️" }, { word: "shoe", pic: "👟" },
-    { word: "ball", pic: "⚽" }, { word: "bell", pic: "🔔" }, { word: "kite", pic: "🪁" },
-    { word: "ring", pic: "💍" }
   ]
 ];
 
 let currentLevel = 0;
 let currentWord, slotsEl, poolEl, checkBtn, msg, pic;
-let selectedLetter = null; // for tap-to-place
+let selectedLetter = null;
 
 function initBuilder() {
   slotsEl = document.getElementById("slots");
@@ -97,7 +87,6 @@ function initBuilder() {
   pickWord();
   checkBtn.onclick = checkWord;
 
-  // Tap-to-place on mobile
   poolEl.addEventListener("click", e => {
     if (e.target.classList.contains("letter-chip")) {
       selectedLetter = e.target.textContent;
@@ -156,10 +145,8 @@ function checkWord() {
     speak(currentWord.word);
     msg.textContent = `🎉 Correct!`;
 
-    // Remove completed word
     levels[currentLevel] = levels[currentLevel].filter(w => w.word !== currentWord.word);
 
-    // Advance level if done
     if (levels[currentLevel].length === 0) {
       currentLevel++;
       if (currentLevel >= levels.length) {
