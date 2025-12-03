@@ -195,4 +195,32 @@ slotsEl.addEventListener("click", e => {
     document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
   }
 });
+const letterSounds = {
+  a: "ah",
+  b: "buh",
+  c: "cuh",
+  d: "duh",
+  e: "eh",
+  f: "fuh",
+  g: "guh",
+  h: "huh",
+  i: "ih",
+  j: "juh",
+  k: "kuh",
+  l: "luh",
+  m: "muh",
+  n: "nuh",
+  o: "oh",
+  p: "puh",
+  q: "kwuh",
+  r: "ruh",
+  s: "suh",
+  t: "tuh",
+  u: "uh",
+  v: "vuh",
+  w: "wuh",
+  x: "ks",
+  y: "yuh",
+  z: "zuh"
+};
 
