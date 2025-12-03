@@ -42,18 +42,10 @@ function speak(text) {
 const letters = "abcdefghijklmnopqrstuvwxyz";
 const letterGrid = document.querySelector(".letter-grid");
 
-const letterSounds = {
-  a: "ah", b: "buh", c: "cuh", d: "duh", e: "eh", f: "fuh",
-  g: "guh", h: "huh", i: "ih", j: "juh", k: "kuh", l: "luh",
-  m: "muh", n: "nuh", o: "oh", p: "puh", q: "kwuh", r: "ruh",
-  s: "suh", t: "tuh", u: "uh", v: "vuh", w: "wuh", x: "ks",
-  y: "yuh", z: "zuh"
-};
-
 letters.split("").forEach(l => {
   const b = document.createElement("button");
   b.textContent = l.toUpperCase();
-  b.onclick = () => speak(letterSounds[l] || l);
+  b.onclick = () => speak(l.toUpperCase()); // speak the letter name
   letterGrid.appendChild(b);
 });
 
@@ -87,12 +79,13 @@ function initBuilder() {
   pickWord();
   checkBtn.onclick = checkWord;
 
+  // Tap-to-place letters for mobile
   poolEl.addEventListener("click", e => {
     if (e.target.classList.contains("letter-chip")) {
       selectedLetter = e.target.textContent;
       document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
       e.target.style.border = "2px solid #ff6f00";
-      speak(letterSounds[selectedLetter.toLowerCase()] || selectedLetter);
+      speak(selectedLetter);
     }
   });
 
