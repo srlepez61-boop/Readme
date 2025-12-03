@@ -1,4 +1,42 @@
-index.html,
+Index.html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Read & Play</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Read & Play</h1>
+
+  <!-- LETTER SOUNDS -->
+  <section id="letters">
+    <h2>Tap a letter to hear its sound</h2>
+    <div class="letter-grid"></div>
+  </section>
+
+  <!-- WORD BUILDER -->
+  <section id="word-builder">
+    <h2>Build the word</h2>
+    <img id="pic" src="" alt="picture" />
+    <div id="slots"></div>
+    <div id="letters-pool"></div>
+    <button id="check-btn">Check</button>
+    <p id="msg"></p>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section id="flashcards">
+    <h2>Sight-word flashcards</h2>
+    <div id="card">?</div>
+    <button id="next-card">Next</button>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
+Style.css
 body{font-family:"Comic Sans MS",cursive;text-align:center;background:#fff5e6;margin:0;padding:1rem}
 h1{color:#ff6f00}
 section{margin:2rem auto;max-width:600px}
@@ -9,7 +47,9 @@ section{margin:2rem auto;max-width:600px}
 .slot{width:50px;height:50px;border:2px dashed #999;border-radius:8px;line-height:50px;font-size:2rem;background:#fafafa}
 .letter-chip{display:inline-block;margin:0.25rem;padding:0.5rem 1rem;font-size:1.5rem;background:#e3f2fd;border-radius:8px;cursor:grab}
 #pic{height:120px}
-#card{font-size:3rem;padding:2rem;background:#e8f5e9;border-radius:12px;margin:1rem auto;width:200px;cursor:// ---------- LETTER SOUNDS ----------
+#card{font-size:3rem;padding:2rem;background:#e8f5e9;border-radius:12px;margin:1rem auto;width:200px;cursor:pointer}
+App.js
+// ---------- LETTER SOUNDS ----------
 const letters = "abcdefghijklmnopqrstuvwxyz";
 const letterGrid = document.querySelector(".letter-grid");
 letters.split("").forEach(l=>{
@@ -97,6 +137,7 @@ nextBtn.onclick=()=>{
 };
 // init
 initBuilder();
-card.textContent=sightWords[0];
+card.textContent=sightWords[0]; 
+
 
 
