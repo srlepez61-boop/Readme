@@ -1,8 +1,5 @@
 body {
-  font-family: "Comic Sans MS", Baloo 2;body {
-    font-family: 'Baloo 2', 
-}
-
+  font-family: "Comic Sans MS", cursive;
   text-align: center;
   background: #fff5e6;
   margin: 0;
@@ -77,56 +74,3 @@ section {
   width: 200px;
   cursor: pointer;
 }
-/* ---------- FONT & BODY ---------- */
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap');
-
-body {
-  font-family: 'Baloo 2', cursive;
-  text-align: center;
-  background: #fff5e6;
-  margin: 0;
-  padding: 1rem;
-}
-
-h1 {
-  color: #ff6f00;
-  font-weight: 700;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-h2 {
-  color: #ff8f00;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-/* ---------- VOICE SELECTOR ---------- */
-#voice-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-#voice-select {
-  font-family: 'Baloo 2', cursive;
-  font-size: 1rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 8px;
-  border: 2px solid #ffb300;
-  background: #ffe082;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-#voice-select:hover {
-  background: #ffd54f;
-}
-
-/* ---------- LETTER GRID ---------- */
-.letter-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.5rem;
-  marg
