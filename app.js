@@ -17,7 +17,6 @@ function loadVoices() {
     voiceSelect.appendChild(option);
   });
 
-  // Set default selected voice
   if (voices.length > 0 && !selectedVoiceName) {
     selectedVoiceName = voices[0].name;
     voiceSelect.value = selectedVoiceName;
@@ -29,7 +28,7 @@ voiceSelect.onchange = () => {
 };
 
 speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices(); // initial load
+loadVoices();
 
 function speak(text) {
   const utter = new SpeechSynthesisUtterance(text);
@@ -43,42 +42,22 @@ function speak(text) {
 }
 
 // ---------- LETTER SOUNDS ----------
-const letterSounds = {
-  a: "ah",
-  b: "buh",
-  c: "cuh",
-  d: "duh",
-  e: "eh",
-  f: "fuh",
-  g: "guh",
-  h: "huh",
-  i: "ih",
-  j: "juh",
-  k: "kuh",
-  l: "luh",
-  m: "muh",
-  n: "nuh",
-  o: "oh",
-  p: "puh",
-  q: "kwuh",
-  r: "ruh",
-  s: "suh",
-  t: "tuh",
-  u: "uh",
-  v: "vuh",
-  w: "wuh",
-  x: "ks",
-  y: "yuh",
-  z: "zuh"
-};
-
-
+const letters = "abcdefghijklmnopqrstuvwxyz";
 const letterGrid = document.querySelector(".letter-grid");
+
+// Child-friendly phonetic sounds
+const letterSounds = {
+  a: "ah", b: "buh", c: "cuh", d: "duh", e: "eh", f: "fuh",
+  g: "guh", h: "huh", i: "ih", j: "juh", k: "kuh", l: "luh",
+  m: "muh", n: "nuh", o: "oh", p: "puh", q: "kwuh", r: "ruh",
+  s: "suh", t: "tuh", u: "uh", v: "vuh", w: "wuh", x: "ks",
+  y: "yuh", z: "zuh"
+};
 
 letters.split("").forEach(l => {
   const b = document.createElement("button");
   b.textContent = l.toUpperCase();
-  b.onclick = () => speak(l);
+  b.onclick = () => speak(letterSounds[l] || l);
   letterGrid.appendChild(b);
 });
 
@@ -106,6 +85,7 @@ const levels = [
 
 let currentLevel = 0;
 let currentWord, slotsEl, poolEl, checkBtn, msg, pic;
+let selectedLetter = null; // for tap-to-place
 
 function initBuilder() {
   slotsEl = document.getElementById("slots");
@@ -116,6 +96,24 @@ function initBuilder() {
 
   pickWord();
   checkBtn.onclick = checkWord;
+
+  // Tap-to-place on mobile
+  poolEl.addEventListener("click", e => {
+    if (e.target.classList.contains("letter-chip")) {
+      selectedLetter = e.target.textContent;
+      document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
+      e.target.style.border = "2px solid #ff6f00";
+      speak(letterSounds[selectedLetter.toLowerCase()] || selectedLetter);
+    }
+  });
+
+  slotsEl.addEventListener("click", e => {
+    if (selectedLetter && e.target.classList.contains("slot")) {
+      e.target.textContent = selectedLetter;
+      selectedLetter = null;
+      document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
+    }
+  });
 }
 
 function pickWord() {
@@ -137,8 +135,6 @@ function pickWord() {
   currentWord.word.split("").forEach(() => {
     const slot = document.createElement("div");
     slot.className = "slot";
-    slot.ondrop = drop;
-    slot.ondragover = e => e.preventDefault();
     slotsEl.appendChild(slot);
   });
 
@@ -147,16 +143,8 @@ function pickWord() {
     const chip = document.createElement("div");
     chip.className = "letter-chip";
     chip.textContent = l.toUpperCase();
-    chip.draggable = true;
-    chip.ondragstart = e => e.dataTransfer.setData("text", l);
     poolEl.appendChild(chip);
   });
-}
-
-function drop(e) {
-  e.preventDefault();
-  const letter = e.dataTransfer.getData("text");
-  e.target.textContent = letter.toUpperCase();
 }
 
 function checkWord() {
@@ -204,52 +192,3 @@ nextBtn.onclick = () => {
 // ---------- INIT ----------
 initBuilder();
 card.textContent = sightWords[0];
-let selectedLetter = null;
-
-// Tap a letter to select it
-poolEl.addEventListener("click", e => {
-  if (e.target.classList.contains("letter-chip")) {
-    selectedLetter = e.target.textContent;
-    // highlight selected
-    document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
-    e.target.style.border = "2px solid #ff6f00";
-  }
-});
-
-// Tap a slot to place the letter
-slotsEl.addEventListener("click", e => {
-  if (selectedLetter && e.target.classList.contains("slot")) {
-    e.target.textContent = selectedLetter;
-    selectedLetter = null;
-    document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
-  }
-});
-const letterSounds = {
-  a: "ah",
-  b: "buh",
-  c: "cuh",
-  d: "duh",
-  e: "eh",
-  f: "fuh",
-  g: "guh",
-  h: "huh",
-  i: "ih",
-  j: "juh",
-  k: "kuh",
-  l: "luh",
-  m: "muh",
-  n: "nuh",
-  o: "oh",
-  p: "puh",
-  q: "kwuh",
-  r: "ruh",
-  s: "suh",
-  t: "tuh",
-  u: "uh",
-  v: "vuh",
-  w: "wuh",
-  x: "ks",
-  y: "yuh",
-  z: "zuh"
-};
-
