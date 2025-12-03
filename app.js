@@ -17,7 +17,7 @@ function loadVoices() {
     voiceSelect.appendChild(option);
   });
 
-  if (voices.length > 0 && !selectedVoiceName) {
+  if (!selectedVoiceName && voices.length > 0) {
     selectedVoiceName = voices[0].name;
     voiceSelect.value = selectedVoiceName;
   }
@@ -25,15 +25,16 @@ function loadVoices() {
 
 voiceSelect.onchange = () => { selectedVoiceName = voiceSelect.value; };
 speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices();
+setTimeout(loadVoices, 100);
 
 function speak(text) {
+  if (!text) return;
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = "en-US";
-  if (voices.length > 0) {
-    const voice = voices.find(v => v.name === selectedVoiceName);
-    if (voice) utter.voice = voice;
-  }
+
+  const voice = voices.find(v => v.name === selectedVoiceName);
+  if (voice) utter.voice = voice;
+
   utter.rate = 0.8;
   speechSynthesis.speak(utter);
 }
@@ -41,13 +42,23 @@ function speak(text) {
 // ---------- LETTER SOUNDS ----------
 const letters = "abcdefghijklmnopqrstuvwxyz";
 const letterGrid = document.querySelector(".letter-grid");
-
 letters.split("").forEach(l => {
-  const b = document.createElement("button");
-  b.textContent = l.toUpperCase();
-  b.onclick = () => speak(l.toUpperCase()); // speak the letter name
-  letterGrid.appendChild(b);
+  const btn = document.createElement("button");
+  btn.textContent = l.toUpperCase();
+  btn.className = "letter-btn";
+  btn.onclick = () => speak(l.toUpperCase());
+  letterGrid.appendChild(btn);
 });
+
+// ---------- UTILITY: FISHER-YATES SHUFFLE ----------
+function shuffleArray(array) {
+  let arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 // ---------- WORD BUILDER ----------
 const levels = [
@@ -66,37 +77,14 @@ const levels = [
 ];
 
 let currentLevel = 0;
-let currentWord, slotsEl, poolEl, checkBtn, msg, pic;
+let currentWord = null;
 let selectedLetter = null;
 
-function initBuilder() {
-  slotsEl = document.getElementById("slots");
-  poolEl = document.getElementById("letters-pool");
-  checkBtn = document.getElementById("check-btn");
-  msg = document.getElementById("msg");
-  pic = document.getElementById("pic");
-
-  pickWord();
-  checkBtn.onclick = checkWord;
-
-  // Tap-to-place letters for mobile
-  poolEl.addEventListener("click", e => {
-    if (e.target.classList.contains("letter-chip")) {
-      selectedLetter = e.target.textContent;
-      document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
-      e.target.style.border = "2px solid #ff6f00";
-      speak(selectedLetter);
-    }
-  });
-
-  slotsEl.addEventListener("click", e => {
-    if (selectedLetter && e.target.classList.contains("slot")) {
-      e.target.textContent = selectedLetter;
-      selectedLetter = null;
-      document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
-    }
-  });
-}
+const slotsEl = document.getElementById("slots");
+const poolEl = document.getElementById("letters-pool");
+const checkBtn = document.getElementById("check-btn");
+const msg = document.getElementById("msg");
+const pic = document.getElementById("pic");
 
 function pickWord() {
   const levelWords = levels[currentLevel];
@@ -104,23 +92,23 @@ function pickWord() {
 
   currentWord = levelWords[Math.floor(Math.random() * levelWords.length)];
 
-  pic.src =
-    "https://twemoji.maxcdn.com/v/14.0.2/72x72/" +
-    currentWord.pic.codePointAt(0).toString(16) +
-    ".png";
+  // Handle multi-codepoint emojis
+  pic.src = `https://twemoji.maxcdn.com/v/14.0.2/72x72/${Array.from(currentWord.pic).map(c => c.codePointAt(0).toString(16)).join('-')}.png`;
   pic.alt = currentWord.word;
 
   slotsEl.innerHTML = "";
   poolEl.innerHTML = "";
   msg.textContent = `Level ${currentLevel + 1}`;
 
+  // Create slots
   currentWord.word.split("").forEach(() => {
     const slot = document.createElement("div");
     slot.className = "slot";
     slotsEl.appendChild(slot);
   });
 
-  const lettersShuffled = [...currentWord.word].sort(() => Math.random() - 0.5);
+  // Shuffle letters
+  const lettersShuffled = shuffleArray([...currentWord.word]);
   lettersShuffled.forEach(l => {
     const chip = document.createElement("div");
     chip.className = "letter-chip";
@@ -130,14 +118,12 @@ function pickWord() {
 }
 
 function checkWord() {
-  const built = Array.from(slotsEl.children)
-    .map(s => s.textContent.toLowerCase())
-    .join("");
-
+  const built = Array.from(slotsEl.children).map(s => s.textContent.toLowerCase()).join("");
   if (built === currentWord.word) {
     speak(currentWord.word);
-    msg.textContent = `🎉 Correct!`;
+    msg.textContent = "🎉 Correct!";
 
+    // Remove word from level
     levels[currentLevel] = levels[currentLevel].filter(w => w.word !== currentWord.word);
 
     if (levels[currentLevel].length === 0) {
@@ -149,12 +135,76 @@ function checkWord() {
         msg.textContent = `🎉 Level ${currentLevel} complete! Advancing...`;
       }
     }
-
     setTimeout(pickWord, 1500);
   } else {
     msg.textContent = "Try again!";
   }
 }
+
+// ---------- TAP-TO-PLACE LETTERS ----------
+poolEl.addEventListener("click", e => {
+  if (e.target.classList.contains("letter-chip") && !e.target.dataset.used) {
+    selectedLetter = e.target.textContent;
+    document.querySelectorAll(".letter-chip").forEach(c => { if (!c.dataset.used) c.style.border = "none"; });
+    e.target.style.border = "2px solid #ff6f00";
+    speak(selectedLetter);
+  }
+});
+
+slotsEl.addEventListener("click", e => {
+  if (selectedLetter && e.target.classList.contains("slot")) {
+    e.target.textContent = selectedLetter;
+
+    // Mark chip as used
+    const chip = Array.from(poolEl.children).find(c => c.textContent === selectedLetter && !c.dataset.used);
+    if (chip) chip.dataset.used = "true";
+
+    selectedLetter = null;
+    document.querySelectorAll(".letter-chip").forEach(c => { if (!c.dataset.used) c.style.border = "none"; });
+  }
+});
+
+checkBtn.onclick = checkWord;
+
+// ---------- KEYBOARD SUPPORT ----------
+document.addEventListener("keydown", e => {
+  if (!currentWord) return;
+  const key = e.key.toLowerCase();
+
+  if (!/^[a-z]$/.test(key)) return; // Only letters
+
+  const poolLetters = Array.from(poolEl.children)
+    .filter(c => c.textContent.toLowerCase() === key && !c.dataset.used);
+
+  if (poolLetters.length === 0) return;
+
+  const chip = poolLetters[0];
+  selectedLetter = chip.textContent;
+  chip.style.border = "2px solid #ff6f00";
+  speak(selectedLetter);
+
+  const emptySlot = Array.from(slotsEl.children).find(s => !s.textContent);
+  if (emptySlot) {
+    emptySlot.textContent = selectedLetter;
+    chip.dataset.used = "true";
+    selectedLetter = null;
+
+    document.querySelectorAll(".letter-chip").forEach(c => { if (!c.dataset.used) c.style.border = "none"; });
+  }
+
+  // Backspace support
+  if (key === "backspace") {
+    const filledSlots = Array.from(slotsEl.children).filter(s => s.textContent);
+    if (filledSlots.length > 0) {
+      const lastSlot = filledSlots[filledSlots.length - 1];
+      const letter = lastSlot.textContent;
+      lastSlot.textContent = "";
+
+      const chipToReturn = Array.from(poolEl.children).find(c => c.textContent === letter && c.dataset.used === "true");
+      if (chipToReturn) delete chipToReturn.dataset.used;
+    }
+  }
+});
 
 // ---------- FLASHCARDS ----------
 const sightWords = ["the","and","you","that","was","for","are","with","his","they"];
@@ -170,5 +220,5 @@ nextBtn.onclick = () => {
 };
 
 // ---------- INIT ----------
-initBuilder();
+pickWord();
 card.textContent = sightWords[0];
