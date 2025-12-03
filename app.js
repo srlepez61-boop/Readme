@@ -175,3 +175,24 @@ nextBtn.onclick = () => {
 // ---------- INIT ----------
 initBuilder();
 card.textContent = sightWords[0];
+let selectedLetter = null;
+
+// Tap a letter to select it
+poolEl.addEventListener("click", e => {
+  if (e.target.classList.contains("letter-chip")) {
+    selectedLetter = e.target.textContent;
+    // highlight selected
+    document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
+    e.target.style.border = "2px solid #ff6f00";
+  }
+});
+
+// Tap a slot to place the letter
+slotsEl.addEventListener("click", e => {
+  if (selectedLetter && e.target.classList.contains("slot")) {
+    e.target.textContent = selectedLetter;
+    selectedLetter = null;
+    document.querySelectorAll(".letter-chip").forEach(c => c.style.border = "none");
+  }
+});
+
