@@ -1,194 +1,202 @@
-document.addEventListener('DOMContentLoaded', () => {
+// ---------- DATA ----------
+const levels = [
+  [{ word: 'cat', pic: '🐱' }, { word: 'dog', pic: '🐶' }, { word: 'sun', pic: '☀️' }],
+  [{ word: 'fish', pic: '🐟' }, { word: 'book', pic: '📖' }, { word: 'star', pic: '⭐' }]
+];
+const sightWords = ["the","and","you","that","was","for","are","with","his","they"];
 
-  const levels = [
-    [{ word: 'cat', pic: '🐱' }, { word: 'dog', pic: '🐶' }, { word: 'sun', pic: '☀️' }],
-    [{ word: 'fish', pic: '🐟' }, { word: 'book', pic: '📖' }, { word: 'star', pic: '⭐' }]
-  ];
+// ---------- STATE ----------
+let currentLevel = 0;
+let currentWord = null;
+let voices = [];
+let userAudioEnabled = false;
+let cardIndex = 0;
 
-  let currentLevel = 0;
-  let currentWord = null;
-  let audioEnabled = false;
+// ---------- ELEMENTS ----------
+const letterGrid = document.querySelector('.letter-grid');
+const slotsEl = document.getElementById('slots');
+const poolEl = document.getElementById('letters-pool');
+const checkBtn = document.getElementById('check-btn');
+const msg = document.getElementById('msg');
+const pic = document.getElementById('pic');
+const card = document.getElementById('card');
+const nextCardBtn = document.getElementById('next-card');
 
-  const letterGrid = document.querySelector('.letter-grid');
-  const slotsEl = document.getElementById('slots');
-  const poolEl = document.getElementById('letters-pool');
-  const checkBtn = document.getElementById('check-btn');
-  const msgEl = document.getElementById('msg');
-  const picEl = document.getElementById('pic');
+// ---------- UTILS ----------
+function shuffleArray(a){
+  const arr = [...a];
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
-  const shuffleBtn = document.createElement('button');
-  shuffleBtn.textContent = '🔀 Shuffle';
-  shuffleBtn.id = 'shuffle-btn';
-  shuffleBtn.style.margin = '0.5rem';
-  poolEl.parentNode.insertBefore(shuffleBtn, poolEl);
+// ---------- VOICE SETUP ----------
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
+speechSynthesis.onvoiceschanged = loadVoices;
+setTimeout(loadVoices, 300);
 
-  const hintBtn = document.createElement('button');
-  hintBtn.textContent = '💡 Hint';
-  hintBtn.id = 'hint-btn';
-  hintBtn.style.margin = '0.5rem';
-  poolEl.parentNode.insertBefore(hintBtn, poolEl);
+function enableAudio(){
+  if(userAudioEnabled) return;
+  userAudioEnabled = true;
+  try{
+    const u = new SpeechSynthesisUtterance('Audio enabled');
+    if(voices[0]) u.voice = voices[0];
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
 
-  // ---------------- UTILS ----------------
-  const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+// ---------- SPEAK ----------
+function speak(text){
+  if(!userAudioEnabled) return;
+  if(!text) return;
+  const u = new SpeechSynthesisUtterance(text);
+  if(voices[0]) u.voice = voices[0];
+  u.rate = 0.95;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
 
-  const enableAudio = () => {
-    if (!audioEnabled) {
-      audioEnabled = true;
-      try { speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch {}
-    }
-  };
+// ---------- LETTER GRID ----------
+function initLetterGrid(){
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  letterGrid.innerHTML = '';
+  [...letters].forEach(l=>{
+    const b = document.createElement('button');
+    b.textContent = l.toUpperCase();
+    b.addEventListener('click', ()=>{
+      if(!userAudioEnabled) enableAudio();
+      speak(l);
+      placeLetterFromPool(l);
+    });
+    letterGrid.appendChild(b);
+  });
+}
 
-  const speak = (text) => {
-    if (!audioEnabled || !text) return;
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 0.95;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utter);
-  };
+// ---------- EMOJI ----------
+function setEmoji(emoji){
+  pic.alt = emoji;
+  try{
+    const codepoints = Array.from(emoji).map(c => c.codePointAt(0).toString(16));
+    pic.src = `https://twemoji.maxcdn.com/v/latest/72x72/${codepoints.join('-')}.png`;
+  }catch(e){ pic.src = ''; }
+}
 
-  document.body.addEventListener('pointerdown', enableAudio, { once: true });
+// ---------- WORD MANAGEMENT ----------
+function pickWord(){
+  const words = levels[currentLevel];
+  if(!words || words.length === 0){ msg.textContent = 'No more words.'; return; }
+  currentWord = words[Math.floor(Math.random() * words.length)];
+  setEmoji(currentWord.pic);
+  slotsEl.innerHTML = '';
+  poolEl.innerHTML = '';
+  msg.textContent = '';
 
-  const setEmoji = (emoji) => {
-    picEl.alt = emoji;
-    if (!emoji) { picEl.src = ''; return; }
-    try {
-      const codepoints = Array.from(emoji).map(c => c.codePointAt(0).toString(16)).join('-');
-      picEl.src = `https://twemoji.maxcdn.com/v/latest/72x72/${codepoints}.png`;
-    } catch { picEl.src = ''; }
-  };
-
-  // ---------------- PICK WORD ----------------
-  function pickWord() {
-    if (!levels[currentLevel] || levels[currentLevel].length === 0) {
-      msgEl.textContent = 'No more words in this level.';
-      return;
-    }
-
-    currentWord = levels[currentLevel][Math.floor(Math.random() * levels[currentLevel].length)];
-    setEmoji(currentWord.pic);
-    msgEl.textContent = '';
-    slotsEl.innerHTML = '';
-    poolEl.innerHTML = '';
-
-    // create slots
-    currentWord.word.split('').forEach(() => {
-      const slot = document.createElement('div');
-      slot.className = 'slot';
-      slot.addEventListener('click', () => {
-        if (!slot.textContent) return;
+  // slots
+  currentWord.word.split('').forEach((ch, idx)=>{
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.dataset.pos = idx;
+    slot.addEventListener('click', ()=>{
+      if(slot.textContent){
         const letter = slot.textContent;
         slot.textContent = '';
         slot.classList.remove('filled');
-        const chip = Array.from(poolEl.children).find(c => c.textContent === letter && c.dataset.used === 'true');
-        if (chip) { chip.dataset.used = 'false'; chip.disabled = false; }
-      });
-      slotsEl.appendChild(slot);
+        const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'true');
+        if(chip){ chip.dataset.used = 'false'; chip.removeAttribute('aria-disabled'); }
+      }
     });
+    slotsEl.appendChild(slot);
+  });
 
-    createLetterChips();
-  }
-
-  // ---------------- CREATE LETTER CHIPS ----------------
-  function createLetterChips() {
-    const letters = shuffle([...currentWord.word]);
-    letters.forEach(l => {
-      const chip = document.createElement('button');
-      chip.className = 'letter-chip';
-      chip.type = 'button';
-      chip.textContent = l.toUpperCase();
-      chip.dataset.used = 'false';
-      chip.addEventListener('click', () => {
-        if (chip.dataset.used === 'true') return;
-        placeLetter(chip);
-        enableAudio();
-        speak(l);
-      });
-      poolEl.appendChild(chip);
+  // letter chips
+  const shuffled = shuffleArray([...currentWord.word]);
+  shuffled.forEach(l=>{
+    const chip = document.createElement('button');
+    chip.className = 'letter-chip';
+    chip.type = 'button';
+    chip.textContent = l.toUpperCase();
+    chip.dataset.used = 'false';
+    chip.setAttribute('aria-disabled','false');
+    chip.addEventListener('click', ()=>{ 
+      if(!userAudioEnabled) enableAudio();
+      if(chip.dataset.used === 'true') return;
+      placeSpecificChip(chip);
+      speak(chip.textContent);
     });
+    poolEl.appendChild(chip);
+  });
+}
+
+function placeLetterFromPool(letter){
+  const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'false');
+  if(!chip) return;
+  placeSpecificChip(chip);
+}
+
+function placeSpecificChip(chip){
+  const emptySlot = Array.from(slotsEl.children).find(s => !s.textContent);
+  if(!emptySlot) return;
+  emptySlot.textContent = chip.textContent;
+  emptySlot.classList.add('filled');
+  chip.dataset.used = 'true';
+  chip.setAttribute('aria-disabled','true');
+}
+
+// ---------- KEYBOARD ----------
+document.addEventListener('keydown', (e)=>{
+  if(!currentWord) return;
+  if(e.key === 'Backspace'){
+    e.preventDefault();
+    const filled = Array.from(slotsEl.children).filter(s=>s.textContent);
+    if(filled.length === 0) return;
+    const last = filled[filled.length-1];
+    const letter = last.textContent;
+    last.textContent = '';
+    last.classList.remove('filled');
+    const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'true');
+    if(chip){ chip.dataset.used='false'; chip.removeAttribute('aria-disabled'); }
+    return;
   }
-
-  // ---------------- PLACE LETTER ----------------
-  function placeLetter(chip, specificSlot = null) {
-    const slot = specificSlot || Array.from(slotsEl.children).find(s => !s.textContent);
-    if (!slot) return;
-    slot.textContent = chip.textContent;
-    slot.classList.add('filled');
-    chip.dataset.used = 'true';
-    chip.disabled = true;
+  if(/^[a-zA-Z]$/.test(e.key)){
+    placeLetterFromPool(e.key);
   }
-
-  function placeLetterByKey(letter) {
-    const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'false');
-    if (chip) placeLetter(chip);
-  }
-
-  // ---------------- KEYBOARD ----------------
-  document.addEventListener('keydown', (e) => {
-    if (!currentWord) return;
-    if (e.key === 'Backspace') {
-      e.preventDefault();
-      const filled = Array.from(slotsEl.children).filter(s => s.textContent);
-      if (!filled.length) return;
-      const last = filled[filled.length - 1];
-      const letter = last.textContent;
-      last.textContent = '';
-      last.classList.remove('filled');
-      const chip = Array.from(poolEl.children).find(c => c.textContent === letter && c.dataset.used === 'true');
-      if (chip) { chip.dataset.used = 'false'; chip.disabled = false; }
-      return;
-    }
-    if (/^[a-zA-Z]$/.test(e.key)) placeLetterByKey(e.key);
-  });
-
-  // ---------------- CHECK ----------------
-  checkBtn.addEventListener('click', () => {
-    const built = Array.from(slotsEl.children).map(s => s.textContent || '').join('').toLowerCase();
-    if (built === currentWord.word) {
-      msgEl.textContent = '🎉 Correct!';
-      speak(currentWord.word);
-      levels[currentLevel] = levels[currentLevel].filter(w => w.word !== currentWord.word);
-      setTimeout(() => {
-        if (levels[currentLevel].length === 0) {
-          currentLevel++;
-          if (currentLevel >= levels.length) {
-            msgEl.textContent = '🏆 All levels complete!';
-            return;
-          }
-        }
-        pickWord();
-      }, 800);
-    } else {
-      msgEl.textContent = 'Try again!';
-    }
-  });
-
-  // ---------------- SHUFFLE ----------------
-  shuffleBtn.addEventListener('click', () => {
-    const letters = Array.from(poolEl.children).map(c => c.textContent);
-    poolEl.innerHTML = '';
-    shuffle(letters).forEach(l => {
-      const chip = document.createElement('button');
-      chip.className = 'letter-chip';
-      chip.type = 'button';
-      chip.textContent = l;
-      chip.dataset.used = 'false';
-      chip.addEventListener('click', () => {
-        if (chip.dataset.used === 'true') return;
-        placeLetter(chip);
-        speak(l);
-      });
-      poolEl.appendChild(chip);
-    });
-  });
-
-  // ---------------- HINT ----------------
-  hintBtn.addEventListener('click', () => {
-    const emptySlots = Array.from(slotsEl.children).filter(s => !s.textContent);
-    if (!emptySlots.length) return;
-    const idx = Array.from(slotsEl.children).indexOf(emptySlots[0]);
-    const correctLetter = currentWord.word[idx];
-    placeLetterByKey(correctLetter);
-  });
-
-  pickWord();
 });
+
+// ---------- CHECK ----------
+checkBtn.addEventListener('click', ()=> checkAndAdvance());
+
+function checkAndAdvance(){
+  if(!currentWord) return;
+  const built = Array.from(slotsEl.children).map(s=>s.textContent||'').join('').toLowerCase();
+  if(built === currentWord.word){
+    msg.textContent = '🎉 Correct!';
+    speak(currentWord.word);
+    levels[currentLevel] = levels[currentLevel].filter(w => w.word !== currentWord.word);
+    setTimeout(()=>{
+      if(levels[currentLevel].length===0){
+        currentLevel++;
+        if(currentLevel>=levels.length){
+          msg.textContent = '🏆 You finished all levels!';
+          return;
+        }
+      }
+      pickWord();
+    },800);
+  }else{
+    msg.textContent = 'Try again!';
+  }
+}
+
+// ---------- FLASHCARDS ----------
+nextCardBtn.addEventListener('click', ()=>{
+  cardIndex = (cardIndex+1)%sightWords.length;
+  card.textContent = sightWords[cardIndex];
+  speak(card.textContent);
+});
+card.addEventListener('click', ()=> speak(card.textContent));
+
+// ---------- INIT ----------
+initLetterGrid();
+pickWord();
