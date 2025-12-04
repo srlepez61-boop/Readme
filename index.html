@@ -7,30 +7,43 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Read & Play</h1>
+  <header>
+    <h1>Read & Play</h1>
+    <button id="enable-audio" class="small-ghost">Enable Audio</button>
+  </header>
 
   <!-- LETTER SOUNDS -->
   <section id="letters">
     <h2>Tap a letter to hear its sound</h2>
-    <div class="letter-grid"></div>
+    <div class="letter-grid" aria-hidden="false"></div>
   </section>
 
   <!-- WORD BUILDER -->
   <section id="word-builder">
     <h2>Build the word</h2>
-    <img id="pic" src="" alt="picture" />
-    <div id="slots"></div>
-    <div id="letters-pool"></div>
-    <button id="check-btn">Check</button>
-    <p id="msg"></p>
+    <img id="pic" src="" alt="" />
+    <div id="slots" class="slots" aria-label="Slots"></div>
+    <div id="letters-pool" class="pool" aria-label="Letters pool"></div>
+
+    <div class="controls">
+      <button id="shuffle-btn" class="ghost">Shuffle</button>
+      <button id="hint-btn" class="ghost">Hint</button>
+      <button id="check-btn" class="primary">Check</button>
+    </div>
+
+    <p id="msg" role="status" aria-live="polite"></p>
   </section>
 
   <!-- FLASHCARDS -->
   <section id="flashcards">
     <h2>Sight-word flashcards</h2>
-    <div id="card">?</div>
-    <button id="next-card">Next</button>
+    <div id="card" class="card">the</div>
+    <button id="next-card" class="ghost">Next</button>
   </section>
+
+  <footer>
+    <small>Works on iPad (touch) and Windows (mouse/keyboard). Tap a letter to speak it. Use Backspace to remove last letter.</small>
+  </footer>
 
   <script src="app.js"></script>
 </body>
