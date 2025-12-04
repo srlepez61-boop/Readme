@@ -9,41 +9,8 @@ body {
   padding: 1rem;
 }
 
-h1 {
-  color: #ff6f00;
-  font-weight: 700;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-h2 {
-  color: #ff8f00;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-/* ---------- VOICE SELECTOR ---------- */
-#voice-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-#voice-select {
-  font-family: 'Baloo 2', cursive;
-  font-size: 1rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 8px;
-  border: 2px solid #ffb300;
-  background: #ffe082;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-#voice-select:hover {
-  background: #ffd54f;
-}
+h1 { color: #ff6f00; font-weight: 700; font-size: 2.5rem; margin-bottom: 1rem; }
+h2 { color: #ff8f00; font-weight: 700; margin-bottom: 0.5rem; }
 
 /* ---------- LETTER GRID ---------- */
 .letter-grid {
@@ -153,10 +120,7 @@ h2 {
   transition: all 0.2s;
 }
 
-#card:hover {
-  background: #c8e6c9;
-  transform: scale(1.05);
-}
+#card:hover { background: #c8e6c9; transform: scale(1.05); }
 
 #next-card {
   font-family: 'Baloo 2', cursive;
@@ -170,36 +134,13 @@ h2 {
   transition: all 0.2s;
 }
 
-#next-card:hover {
-  background: #81c784;
-  transform: scale(1.05);
-}
+#next-card:hover { background: #81c784; transform: scale(1.05); }
 
-/* ---------- MOBILE RESPONSIVE ---------- */
+/* ---------- MOBILE ---------- */
 @media (max-width: 600px) {
-  .letter-grid button {
-    font-size: 2.5rem;
-    padding: 0.7rem;
-  }
-
-  .slot {
-    width: 60px;
-    height: 60px;
-    line-height: 60px;
-    font-size: 2.2rem;
-  }
-
-  .letter-chip {
-    font-size: 1.8rem;
-    padding: 0.6rem 1.2rem;
-  }
-
-  #check-btn, #next-card {
-    font-size: 1.4rem;
-    padding: 0.6rem 1.2rem;
-  }
-
-  #pic {
-    height: 140px;
-  }
+  .letter-grid button { font-size: 2.5rem; padding: 0.7rem; }
+  .slot { width: 60px; height: 60px; line-height: 60px; font-size: 2.2rem; }
+  .letter-chip { font-size: 1.8rem; padding: 0.6rem 1.2rem; }
+  #check-btn, #next-card { font-size: 1.4rem; padding: 0.6rem 1.2rem; }
+  #pic { height: 140px; }
 }
