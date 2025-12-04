@@ -1,49 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Read & Play</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>ABC Learning</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Read & Play</h1>
-    <button id="enable-audio" class="small-ghost">Enable Audio</button>
-  </header>
 
-  <!-- LETTER SOUNDS -->
-  <section id="letters">
-    <h2>Tap a letter to hear its sound</h2>
-    <div class="letter-grid" aria-hidden="false"></div>
+  <h1>ABC Learning</h1>
+
+  <!-- NAV -->
+  <nav>
+    <button data-screen="home">Home</button>
+    <button data-screen="letters">Alphabet</button>
+    <button data-screen="builder">Build A Word</button>
+    <button data-screen="flashcards">Flashcards</button>
+  </nav>
+
+  <!-- HOME -->
+  <section id="home" class="screen active">
+    <h2>Welcome!</h2>
+    <p>Choose an activity</p>
+    <div id="stars">⭐ 0</div>
   </section>
 
-  <!-- WORD BUILDER -->
-  <section id="word-builder">
-    <h2>Build the word</h2>
-    <img id="pic" src="" alt="" />
-    <div id="slots" class="slots" aria-label="Slots"></div>
-    <div id="letters-pool" class="pool" aria-label="Letters pool"></div>
+  <!-- ALPHABET -->
+  <section id="letters" class="screen">
+    <h2>Alphabet Sounds</h2>
+    <div id="letter-grid"></div>
+  </section>
 
-    <div class="controls">
-      <button id="shuffle-btn" class="ghost">Shuffle</button>
-      <button id="hint-btn" class="ghost">Hint</button>
-      <button id="check-btn" class="primary">Check</button>
-    </div>
-
-    <p id="msg" role="status" aria-live="polite"></p>
+  <!-- BUILD A WORD -->
+  <section id="builder" class="screen">
+    <h2>Build The Word</h2>
+    <img id="pic" alt="pic" height="120">
+    <div id="slots"></div>
+    <div id="pool"></div>
+    <button id="check">Check</button>
+    <p id="builder-msg"></p>
   </section>
 
   <!-- FLASHCARDS -->
-  <section id="flashcards">
-    <h2>Sight-word flashcards</h2>
-    <div id="card" class="card">the</div>
-    <button id="next-card" class="ghost">Next</button>
+  <section id="flashcards" class="screen">
+    <h2>Sight Words</h2>
+    <div id="card">Tap for sound</div>
+    <button id="next-card">Next</button>
   </section>
-
-  <footer>
-    <small>Works on iPad (touch) and Windows (mouse/keyboard). Tap a letter to speak it. Use Backspace to remove last letter.</small>
-  </footer>
 
   <script src="app.js"></script>
 </body>
