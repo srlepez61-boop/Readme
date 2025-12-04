@@ -1,5 +1,3 @@
-// app.js - Build-a-Word + shuffle + hint + emoji
-
 document.addEventListener('DOMContentLoaded', () => {
 
   const levels = [
@@ -72,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     slotsEl.innerHTML = '';
     poolEl.innerHTML = '';
 
+    // create slots
     currentWord.word.split('').forEach(() => {
       const slot = document.createElement('div');
       slot.className = 'slot';
@@ -93,4 +92,103 @@ document.addEventListener('DOMContentLoaded', () => {
   function createLetterChips() {
     const letters = shuffle([...currentWord.word]);
     letters.forEach(l => {
-      const chip = document.creat
+      const chip = document.createElement('button');
+      chip.className = 'letter-chip';
+      chip.type = 'button';
+      chip.textContent = l.toUpperCase();
+      chip.dataset.used = 'false';
+      chip.addEventListener('click', () => {
+        if (chip.dataset.used === 'true') return;
+        placeLetter(chip);
+        enableAudio();
+        speak(l);
+      });
+      poolEl.appendChild(chip);
+    });
+  }
+
+  // ---------------- PLACE LETTER ----------------
+  function placeLetter(chip, specificSlot = null) {
+    const slot = specificSlot || Array.from(slotsEl.children).find(s => !s.textContent);
+    if (!slot) return;
+    slot.textContent = chip.textContent;
+    slot.classList.add('filled');
+    chip.dataset.used = 'true';
+    chip.disabled = true;
+  }
+
+  function placeLetterByKey(letter) {
+    const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'false');
+    if (chip) placeLetter(chip);
+  }
+
+  // ---------------- KEYBOARD ----------------
+  document.addEventListener('keydown', (e) => {
+    if (!currentWord) return;
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      const filled = Array.from(slotsEl.children).filter(s => s.textContent);
+      if (!filled.length) return;
+      const last = filled[filled.length - 1];
+      const letter = last.textContent;
+      last.textContent = '';
+      last.classList.remove('filled');
+      const chip = Array.from(poolEl.children).find(c => c.textContent === letter && c.dataset.used === 'true');
+      if (chip) { chip.dataset.used = 'false'; chip.disabled = false; }
+      return;
+    }
+    if (/^[a-zA-Z]$/.test(e.key)) placeLetterByKey(e.key);
+  });
+
+  // ---------------- CHECK ----------------
+  checkBtn.addEventListener('click', () => {
+    const built = Array.from(slotsEl.children).map(s => s.textContent || '').join('').toLowerCase();
+    if (built === currentWord.word) {
+      msgEl.textContent = '🎉 Correct!';
+      speak(currentWord.word);
+      levels[currentLevel] = levels[currentLevel].filter(w => w.word !== currentWord.word);
+      setTimeout(() => {
+        if (levels[currentLevel].length === 0) {
+          currentLevel++;
+          if (currentLevel >= levels.length) {
+            msgEl.textContent = '🏆 All levels complete!';
+            return;
+          }
+        }
+        pickWord();
+      }, 800);
+    } else {
+      msgEl.textContent = 'Try again!';
+    }
+  });
+
+  // ---------------- SHUFFLE ----------------
+  shuffleBtn.addEventListener('click', () => {
+    const letters = Array.from(poolEl.children).map(c => c.textContent);
+    poolEl.innerHTML = '';
+    shuffle(letters).forEach(l => {
+      const chip = document.createElement('button');
+      chip.className = 'letter-chip';
+      chip.type = 'button';
+      chip.textContent = l;
+      chip.dataset.used = 'false';
+      chip.addEventListener('click', () => {
+        if (chip.dataset.used === 'true') return;
+        placeLetter(chip);
+        speak(l);
+      });
+      poolEl.appendChild(chip);
+    });
+  });
+
+  // ---------------- HINT ----------------
+  hintBtn.addEventListener('click', () => {
+    const emptySlots = Array.from(slotsEl.children).filter(s => !s.textContent);
+    if (!emptySlots.length) return;
+    const idx = Array.from(slotsEl.children).indexOf(emptySlots[0]);
+    const correctLetter = currentWord.word[idx];
+    placeLetterByKey(correctLetter);
+  });
+
+  pickWord();
+});
