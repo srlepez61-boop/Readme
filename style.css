@@ -1,146 +1,54 @@
-/* ---------- FONT & BODY ---------- */
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap');
 
-body {
-  font-family: 'Baloo 2', cursive;
-  text-align: center;
-  background: #fff5e6;
-  margin: 0;
-  padding: 1rem;
+:root{
+  --accent:#ff6f00;
+  --muted:#666;
+  --card:#fff;
+  --bg:#fff5e6;
 }
 
-h1 { color: #ff6f00; font-weight: 700; font-size: 2.5rem; margin-bottom: 1rem; }
-h2 { color: #ff8f00; font-weight: 700; margin-bottom: 0.5rem; }
-
-/* ---------- LETTER GRID ---------- */
-.letter-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+*{box-sizing:border-box}
+body{
+  font-family:'Baloo 2', cursive;
+  background:var(--bg);
+  margin:0;
+  padding:16px;
+  color:#222;
+  -webkit-font-smoothing:antialiased;
 }
 
-.letter-grid button {
-  font-family: 'Baloo 2', cursive;
-  font-weight: 700;
-  font-size: 2rem;
-  padding: 0.5rem;
-  border: none;
-  background: #ffe082;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+h1{margin:0;color:var(--accent);font-size:1.6rem}
+.small-ghost{background:transparent;border:1px solid #ddd;padding:6px 8px;border-radius:8px;font-weight:700;cursor:pointer}
 
-.letter-grid button:active,
-.letter-grid button:hover {
-  background: #ffd54f;
-  transform: scale(1.1);
-}
+section{background:var(--card);padding:12px;border-radius:12px;margin-bottom:12px;box-shadow:0 6px 18px rgba(20,20,40,0.06)}
+h2{margin:0 0 8px 0;color:#ff8f00;font-size:1.05rem}
 
-/* ---------- WORD BUILDER ---------- */
-#slots {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 1rem 0;
-}
+.letter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:8px;margin-bottom:8px}
+.letter-grid button{font-size:1.4rem;padding:10px;border-radius:10px;border:0;background:#ffe082;cursor:pointer;transition:transform .12s}
+.letter-grid button:active,.letter-grid button:hover{transform:scale(1.05);background:#ffd54f}
 
-.slot {
-  width: 50px;
-  height: 50px;
-  border: 2px dashed #999;
-  border-radius: 10px;
-  line-height: 50px;
-  font-size: 2rem;
-  background: #fafafa;
-  transition: all 0.2s;
-}
+.slots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.slot{width:56px;height:56px;border-radius:10px;border:2px dashed #999;display:grid;place-items:center;font-weight:700;font-size:1.6rem;background:#fafafa;touch-action:none}
+.slot.filled{border-style:solid;background:#fff}
 
-.letter-chip {
-  display: inline-block;
-  margin: 0.25rem;
-  padding: 0.5rem 1rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: #e3f2fd;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
+.letter-chip{padding:8px 12px;border-radius:10px;background:#e3f2fd;font-weight:700;cursor:pointer;user-select:none;border:1px solid #cfe7ff}
+.letter-chip[aria-disabled="true"]{opacity:0.4;cursor:default}
 
-.letter-chip:hover {
-  background: #90caf9;
-  transform: scale(1.05);
-}
+.controls{display:flex;gap:8px;justify-content:center;margin-top:10px}
+button.primary{background:var(--accent);color:white;border:0;padding:8px 12px;border-radius:10px;cursor:pointer}
+button.ghost{background:transparent;border:1px solid #ddd;padding:8px 10px;border-radius:10px;cursor:pointer}
 
-#pic {
-  height: 120px;
-  margin-bottom: 0.5rem;
-}
+#pic{height:120px;display:block;margin:10px auto;border-radius:12px}
+#msg{text-align:center;font-weight:700;margin-top:8px;color:var(--accent)}
 
-/* ---------- CHECK BUTTON ---------- */
-#check-btn {
-  font-family: 'Baloo 2', cursive;
-  font-weight: 700;
-  font-size: 1.2rem;
-  padding: 0.5rem 1rem;
-  margin-top: 0.5rem;
-  border-radius: 10px;
-  border: 2px solid #ffb300;
-  background: #ffe082;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+.card{font-weight:700;font-size:2.2rem;padding:18px;background:#e8f5e9;border-radius:12px;width:220px;margin:10px auto;text-align:center}
+footer{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
 
-#check-btn:hover {
-  background: #ffd54f;
-  transform: scale(1.05);
-}
-
-/* ---------- MESSAGES ---------- */
-#msg {
-  font-size: 1.2rem;
-  margin-top: 0.5rem;
-  font-weight: 700;
-}
-
-/* ---------- FLASHCARDS ---------- */
-#card {
-  font-family: 'Baloo 2', cursive;
-  font-weight: 700;
-  font-size: 3rem;
-  padding: 2rem;
-  background: #e8f5e9;
-  border-radius: 12px;
-  margin: 1rem auto;
-  width: 200px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-#card:hover { background: #c8e6c9; transform: scale(1.05); }
-
-#next-card {
-  font-family: 'Baloo 2', cursive;
-  font-weight: 700;
-  font-size: 1.2rem;
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  border: 2px solid #43a047;
-  background: #a5d6a7;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-#next-card:hover { background: #81c784; transform: scale(1.05); }
-
-/* ---------- MOBILE ---------- */
-@media (max-width: 600px) {
-  .letter-grid button { font-size: 2.5rem; padding: 0.7rem; }
-  .slot { width: 60px; height: 60px; line-height: 60px; font-size: 2.2rem; }
-  .letter-chip { font-size: 1.8rem; padding: 0.6rem 1.2rem; }
-  #check-btn, #next-card { font-size: 1.4rem; padding: 0.6rem 1.2rem; }
-  #pic { height: 140px; }
+/* mobile touch targets */
+@media (max-width:600px){
+  .letter-grid button{font-size:1.6rem;padding:14px}
+  .slot{width:64px;height:64px;font-size:1.8rem}
+  .card{width:260px}
 }
