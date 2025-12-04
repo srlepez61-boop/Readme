@@ -1,69 +1,20 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Read & Play</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap');
-    body { font-family: 'Baloo 2', cursive; text-align:center; background:#fff5e6; margin:0; padding:1rem; }
-    h1 { color:#ff6f00; font-weight:700; font-size:2.5rem; margin-bottom:1rem; }
-    h2 { color:#ff8f00; font-weight:700; margin-bottom:0.5rem; }
-    .letter-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(50px,1fr)); gap:0.5rem; margin-bottom:1rem; }
-    .letter-grid button { font-weight:700; font-size:2rem; padding:0.5rem; border:none; background:#ffe082; border-radius:10px; cursor:pointer; transition:all 0.2s; }
-    .letter-grid button:hover { background:#ffd54f; transform:scale(1.1); }
-    #slots { display:flex; justify-content:center; flex-wrap:wrap; gap:0.5rem; margin:1rem 0; }
-    .slot { width:50px; height:50px; border:2px dashed #999; border-radius:10px; line-height:50px; font-size:2rem; background:#fafafa; transition:all 0.2s; }
-    .letter-chip { display:inline-block; margin:0.25rem; padding:0.5rem 1rem; font-size:1.5rem; font-weight:700; background:#e3f2fd; border-radius:10px; cursor:pointer; transition:all 0.2s; }
-    .letter-chip:hover { background:#90caf9; transform:scale(1.05); }
-    #pic { height:120px; margin-bottom:0.5rem; }
-    #check-btn { font-weight:700; font-size:1.2rem; padding:0.5rem 1rem; margin-top:0.5rem; border-radius:10px; border:2px solid #ffb300; background:#ffe082; cursor:pointer; transition:all 0.2s; }
-    #check-btn:hover { background:#ffd54f; transform:scale(1.05); }
-    #msg { font-size:1.2rem; margin-top:0.5rem; font-weight:700; }
-    #card { font-weight:700; font-size:3rem; padding:2rem; background:#e8f5e9; border-radius:12px; margin:1rem auto; width:200px; cursor:pointer; transition:all 0.2s; }
-    #card:hover { background:#c8e6c9; transform:scale(1.05); }
-    #next-card { font-weight:700; font-size:1.2rem; padding:0.5rem 1rem; border-radius:10px; border:2px solid #43a047; background:#a5d6a7; cursor:pointer; transition:all 0.2s; }
-    #next-card:hover { background:#81c784; transform:scale(1.05); }
-  </style>
-</head>
-<body>
-  <h1>Read & Play</h1>
+// Full, cross-platform app.js — tuned for iPad + Windows
 
-  <!-- LETTER GRID -->
-  <section id="letters">
-    <h2>Tap a letter to hear its sound</h2>
-    <div class="letter-grid"></div>
-  </section>
-
-  <!-- WORD BUILDER -->
-  <section id="word-builder">
-    <h2>Build the word</h2>
-    <img id="pic" src="" alt="picture" />
-    <div id="slots"></div>
-    <div id="letters-pool"></div>
-    <button id="check-btn">Check</button>
-    <p id="msg"></p>
-  </section>
-
-  <!-- FLASHCARDS -->
-  <section id="flashcards">
-    <h2>Sight-word flashcards</h2>
-    <div id="card">?</div>
-    <button id="next-card">Next</button>
-  </section>
-
-<script>
+// ---------- DATA ----------
 const levels = [
-  [{word:'cat', pic:'🐱'}, {word:'dog', pic:'🐶'}, {word:'sun', pic:'☀️'}],
-  [{word:'fish', pic:'🐟'}, {word:'book', pic:'📖'}, {word:'star', pic:'⭐'}]
+  [{ word: 'cat', pic: '🐱' }, { word: 'dog', pic: '🐶' }, { word: 'sun', pic: '☀️' }],
+  [{ word: 'fish', pic: '🐟' }, { word: 'book', pic: '📖' }, { word: 'star', pic: '⭐' }]
 ];
+const sightWords = ["the","and","you","that","was","for","are","with","his","they"];
 
+// ---------- STATE ----------
 let currentLevel = 0;
 let currentWord = null;
 let voices = [];
-let selectedVoice = '';
+let userAudioEnabled = false;
+let cardIndex = 0;
 
+// ---------- ELEMENTS ----------
 const letterGrid = document.querySelector('.letter-grid');
 const slotsEl = document.getElementById('slots');
 const poolEl = document.getElementById('letters-pool');
@@ -72,115 +23,261 @@ const msg = document.getElementById('msg');
 const pic = document.getElementById('pic');
 const card = document.getElementById('card');
 const nextCardBtn = document.getElementById('next-card');
+const enableAudioBtn = document.getElementById('enable-audio');
+const shuffleBtn = document.getElementById('shuffle-btn');
+const hintBtn = document.getElementById('hint-btn');
 
-function shuffleArray(a){const arr=[...a];for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+// ---------- UTILS ----------
+function shuffleArray(a){
+  const arr = [...a];
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
-function loadVoices(){voices = speechSynthesis.getVoices(); if(voices[0]) selectedVoice = voices[0];}
+// ---------- VOICE SETUP ----------
+function loadVoices(){ voices = speechSynthesis.getVoices(); }
 speechSynthesis.onvoiceschanged = loadVoices;
-setTimeout(loadVoices,200);
+setTimeout(loadVoices, 300);
 
-function speak(text){if(!text) return; const u = new SpeechSynthesisUtterance(text); if(selectedVoice) u.voice=selectedVoice; u.rate=0.9; speechSynthesis.cancel(); speechSynthesis.speak(u);}
+function enableAudio(){
+  // Some iOS require a user gesture before speech works — call a short speak
+  if(userAudioEnabled) return;
+  userAudioEnabled = true;
+  try{ const u = new SpeechSynthesisUtterance('Audio enabled'); if(voices[0]) u.voice = voices[0]; speechSynthesis.speak(u); }
+  catch(e){ /* ignore */ }
+  enableAudioBtn.style.display = 'none';
+}
+enableAudioBtn.addEventListener('click', enableAudio);
 
-// Initialize letters
+// ---------- SPEAK ----------
+function speak(text){
+  if(!userAudioEnabled) return; // require enable on iPad
+  if(!text) return;
+  const u = new SpeechSynthesisUtterance(text);
+  if(voices[0]) u.voice = voices[0];
+  u.rate = 0.95;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+// ---------- LETTER GRID (touch friendly) ----------
 (function initLetterGrid(){
-  const letters='abcdefghijklmnopqrstuvwxyz';
-  letters.split('').forEach(l=>{
-    const btn = document.createElement('button');
-    btn.textContent = l.toUpperCase();
-    btn.addEventListener('click',()=>{speak(l); placeLetterFromPool(l)});
-    letterGrid.appendChild(btn);
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  letterGrid.innerHTML = '';
+  [...letters].forEach(l=>{
+    const b = document.createElement('button');
+    b.textContent = l.toUpperCase();
+    b.addEventListener('click', ()=>{
+      // first user gesture also enables audio for iOS if they haven't tapped enable
+      if(!userAudioEnabled) enableAudio();
+      speak(l);
+      placeLetterFromPool(l);
+    });
+    letterGrid.appendChild(b);
   });
 })();
 
+// ---------- EMOJI LOADING (Twemoji) ----------
 function setEmoji(emoji){
+  pic.alt = emoji;
   try{
     const codepoints = Array.from(emoji).map(c => c.codePointAt(0).toString(16));
-    pic.src = `https://twemoji.maxcdn.com/v/14.0.2/72x72/${codepoints.join('-')}.png`;
-  }catch(e){pic.src='';}
-  pic.alt = emoji;
+    pic.src = `https://twemoji.maxcdn.com/v/latest/72x72/${codepoints.join('-')}.png`;
+  }catch(e){
+    pic.src = '';
+  }
 }
 
+// ---------- WORD MANAGEMENT ----------
 function pickWord(){
   const words = levels[currentLevel];
-  if(!words || words.length===0){msg.textContent='No more words!'; return;}
-  currentWord = words[Math.floor(Math.random()*words.length)];
+  if(!words || words.length === 0){ msg.textContent = 'No more words in this level.'; return; }
+  currentWord = words[Math.floor(Math.random() * words.length)];
   setEmoji(currentWord.pic);
-  slotsEl.innerHTML=''; poolEl.innerHTML=''; msg.textContent='';
-  
-  currentWord.word.split('').forEach(()=>{ 
-    const slot = document.createElement('div'); slot.className='slot'; slotsEl.appendChild(slot); 
+  slotsEl.innerHTML = '';
+  poolEl.innerHTML = '';
+  msg.textContent = '';
+
+  // create slots
+  currentWord.word.split('').forEach((ch, idx)=>{
+    const slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.dataset.pos = idx;
+    slot.addEventListener('click', ()=>{ // allow clearing by tapping slot
+      if(slot.textContent){
+        const letter = slot.textContent;
+        slot.textContent = '';
+        slot.classList.remove('filled');
+        // re-enable corresponding chip
+        const chip = Array.from(poolEl.children).find(c => c.textContent === letter && c.dataset.used === 'true');
+        if(chip){ chip.dataset.used = 'false'; chip.removeAttribute('aria-disabled'); }
+      }
+    });
+    slotsEl.appendChild(slot);
   });
 
-  shuffleArray([...currentWord.word]).forEach(l=>{
+  // create letter chips (shuffled)
+  const shuffled = shuffleArray([...currentWord.word]);
+  shuffled.forEach(l=>{
     const chip = document.createElement('button');
-    chip.className='letter-chip';
+    chip.className = 'letter-chip';
+    chip.type = 'button';
     chip.textContent = l.toUpperCase();
-    chip.addEventListener('click',()=>selectChip(chip));
+    chip.dataset.used = 'false';
+    chip.setAttribute('aria-disabled','false');
+
+    // click/tap places letter
+    chip.addEventListener('click', ()=>{
+      if(!userAudioEnabled) enableAudio();
+      if(chip.dataset.used === 'true') return;
+      placeSpecificChip(chip);
+      speak(chip.textContent);
+    });
+
+    // make draggable for desktop
+    chip.draggable = true;
+    chip.addEventListener('dragstart', (ev)=>{ ev.dataTransfer.setData('text/plain', chip.textContent); });
+
     poolEl.appendChild(chip);
+  });
+
+  // enable slots to accept drops
+  Array.from(slotsEl.children).forEach(slot=>{
+    slot.addEventListener('dragover', ev => ev.preventDefault());
+    slot.addEventListener('drop', ev => {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData('text/plain'); // e.g. 'C'
+      if(!data) return;
+      // place into THIS slot (we'll allow placing into first empty if slot filled)
+      const targetSlot = ev.currentTarget;
+      // if it's already filled, do nothing
+      if(targetSlot.textContent) return;
+      // find chip with that letter that's not used
+      const chip = Array.from(poolEl.children).find(c => c.textContent === data && c.dataset.used === 'false');
+      if(!chip) return;
+      // place into this specific slot (not necessarily first empty)
+      targetSlot.textContent = chip.textContent;
+      targetSlot.classList.add('filled');
+      chip.dataset.used = 'true';
+      chip.setAttribute('aria-disabled','true');
+    });
   });
 }
 
-function selectChip(chip){
-  const emptySlot = Array.from(slotsEl.children).find(s=>!s.textContent);
+// place first empty slot (used by letter-grid and keyboard)
+function placeLetterFromPool(letter){
+  const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'false');
+  if(!chip) return;
+  placeSpecificChip(chip);
+}
+
+// place a specific chip into first empty slot
+function placeSpecificChip(chip){
+  const emptySlot = Array.from(slotsEl.children).find(s => !s.textContent);
   if(!emptySlot) return;
   emptySlot.textContent = chip.textContent;
   emptySlot.classList.add('filled');
-  chip.disabled = true;
-  speak(chip.textContent);
+  chip.dataset.used = 'true';
+  chip.setAttribute('aria-disabled','true');
 }
 
-// Remove last filled slot
-document.addEventListener('keydown', e=>{
+// ---------- KEYBOARD (desktop) & BACKSPACE ----------
+document.addEventListener('keydown', (e)=>{
   if(!currentWord) return;
   if(e.key === 'Backspace'){
     e.preventDefault();
-    const filledSlots = Array.from(slotsEl.children).filter(s=>s.textContent);
-    if(filledSlots.length===0) return;
-    const last = filledSlots[filledSlots.length-1];
+    const filled = Array.from(slotsEl.children).filter(s => s.textContent);
+    if(filled.length === 0) return;
+    const last = filled[filled.length - 1];
     const letter = last.textContent;
-    last.textContent=''; last.classList.remove('filled');
-    Array.from(poolEl.children).find(c=>c.textContent===letter && c.disabled).disabled=false;
+    last.textContent = '';
+    last.classList.remove('filled');
+    const chip = Array.from(poolEl.children).find(c => c.textContent === letter && c.dataset.used === 'true');
+    if(chip){ chip.dataset.used = 'false'; chip.removeAttribute('aria-disabled'); }
+    return;
   }
-  if(/^[a-z]$/.test(e.key)){
+  if(/^[a-zA-Z]$/.test(e.key)){
     placeLetterFromPool(e.key);
   }
 });
 
-function placeLetterFromPool(letter){
-  const chip = Array.from(poolEl.children).find(c=>c.textContent.toLowerCase()===letter.toLowerCase() && !c.disabled);
-  if(chip) selectChip(chip);
-}
+// ---------- CHECK / AUTO-ADVANCE ----------
+checkBtn.addEventListener('click', ()=> checkAndAdvance());
 
-checkBtn.addEventListener('click', ()=>{
-  const built = Array.from(slotsEl.children).map(s=>s.textContent||'').join('').toLowerCase();
-  if(built===currentWord.word){
-    msg.textContent='🎉 Correct!';
+function checkAndAdvance(){
+  if(!currentWord) return;
+  const built = Array.from(slotsEl.children).map(s => s.textContent || '').join('').toLowerCase();
+  if(built === currentWord.word){
+    msg.textContent = '🎉 Correct!';
     speak(currentWord.word);
-    levels[currentLevel] = levels[currentLevel].filter(w=>w.word!==currentWord.word);
+    // remove current word from level list
+    levels[currentLevel] = levels[currentLevel].filter(w => w.word !== currentWord.word);
     setTimeout(()=>{
-      if(levels[currentLevel].length===0){
+      // advance level if needed
+      if(levels[currentLevel].length === 0){
         currentLevel++;
-        if(currentLevel>=levels.length){ msg.textContent='🏆 You finished all levels!'; return;}
-        msg.textContent=`🎉 Level ${currentLevel+1}!`;
+        if(currentLevel >= levels.length){
+          msg.textContent = '🏆 You finished all levels!';
+          return;
+        }
       }
       pickWord();
-    },900);
-  }else{
-    msg.textContent='Try again!';
+    }, 800);
+  } else {
+    msg.textContent = 'Try again!';
   }
+}
+
+// ---------- SHUFFLE + HINT ----------
+shuffleBtn.addEventListener('click', ()=>{
+  if(!currentWord) return;
+  // shuffle remaining unused chips in pool visually
+  const letters = Array.from(poolEl.children).map(c => c.textContent);
+  const shuffled = shuffleArray(letters);
+  poolEl.innerHTML = '';
+  shuffled.forEach(l => {
+    const chip = document.createElement('button');
+    chip.className = 'letter-chip';
+    chip.type = 'button';
+    chip.textContent = l;
+    chip.dataset.used = 'false';
+    chip.setAttribute('aria-disabled','false');
+    chip.addEventListener('click', ()=>{ placeSpecificChip(chip); speak(chip.textContent); });
+    chip.draggable = true;
+    chip.addEventListener('dragstart', ev => ev.dataTransfer.setData('text/plain', chip.textContent));
+    poolEl.appendChild(chip);
+  });
 });
 
-// Flashcards
-const sightWords = ["the","and","you","that","was","for","are","with","his","they"];
-let cardIndex = 0;
+hintBtn.addEventListener('click', ()=>{
+  if(!currentWord) return;
+  // reveal the next missing letter in its correct position
+  const emptySlots = Array.from(slotsEl.children).filter(s => !s.textContent);
+  if(emptySlots.length === 0) return;
+  const idx = Array.from(slotsEl.children).indexOf(emptySlots[0]); // first empty
+  const correctLetter = currentWord.word[idx];
+  placeLetterFromPool(correctLetter);
+});
+
+// ---------- FLASHCARDS ----------
 nextCardBtn.addEventListener('click', ()=>{
-  cardIndex = (cardIndex+1)%sightWords.length;
+  cardIndex = (cardIndex + 1) % sightWords.length;
   card.textContent = sightWords[cardIndex];
   speak(card.textContent);
 });
-card.addEventListener('click', ()=>speak(card.textContent));
+card.addEventListener('click', ()=> speak(card.textContent));
 
+// ---------- INIT ----------
 pickWord();
-</script>
-</body>
-</html>
+
+// expose pickWord for re-use
+function pickWord(){
+  // (function body defined earlier but hoisted) -- call the one above
+  // to keep code single-file, re-call the defined pickWord by referencing function name (already defined)
+  // Note: function definition for pickWord exists above in the script (hoisted)
+}
+
+// (Because we defined pickWord earlier as a function declaration, it's available)
