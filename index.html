@@ -1,50 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ABC Learning</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <title>Read & Play</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <h1>Read & Play</h1>
 
-  <h1>ABC Learning</h1>
-
-  <!-- NAV -->
-  <nav>
-    <button data-screen="home">Home</button>
-    <button data-screen="letters">Alphabet</button>
-    <button data-screen="builder">Build A Word</button>
-    <button data-screen="flashcards">Flashcards</button>
-  </nav>
-
-  <!-- HOME -->
-  <section id="home" class="screen active">
-    <h2>Welcome!</h2>
-    <p>Choose an activity</p>
-    <div id="stars">⭐ 0</div>
+  <!-- LETTER SOUNDS -->
+  <section id="letters">
+    <h2>Tap a letter to hear its sound</h2>
+    <div class="letter-grid"></div>
   </section>
 
-  <!-- ALPHABET -->
-  <section id="letters" class="screen">
-    <h2>Alphabet Sounds</h2>
-    <div id="letter-grid"></div>
-  </section>
-
-  <!-- BUILD A WORD -->
-  <section id="builder" class="screen">
-    <h2>Build The Word</h2>
-    <img id="pic" alt="pic" height="120">
+  <!-- WORD BUILDER -->
+  <section id="word-builder">
+    <h2>Build the word</h2>
+    <img id="pic" src="" alt="picture" />
     <div id="slots"></div>
-    <div id="pool"></div>
-    <button id="check">Check</button>
-    <p id="builder-msg"></p>
+    <div id="letters-pool"></div>
+    <button id="check-btn">Check</button>
+    <p id="msg"></p>
   </section>
 
   <!-- FLASHCARDS -->
-  <section id="flashcards" class="screen">
-    <h2>Sight Words</h2>
-    <div id="card">Tap for sound</div>
+  <section id="flashcards">
+    <h2>Sight-word flashcards</h2>
+    <div id="card">?</div>
     <button id="next-card">Next</button>
   </section>
 
