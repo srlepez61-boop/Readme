@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
   <div id="app">
 
@@ -38,6 +37,7 @@
         <p class="muted">Choose a game</p>
 
         <div id="path-map" class="path-map"></div>
+        <p id="path-status" class="feedback"></p>
 
         <div class="menu-grid">
           <button class="menu-btn" data-screen="letters">Letters</button>
@@ -46,7 +46,6 @@
           <button class="menu-btn" data-screen="rhyme">Rhyming Game</button>
           <button class="menu-btn" data-screen="tracing">Tracing Game</button>
           <button class="menu-btn" data-screen="math">Math Game</button>
-          <button class="menu-btn" data-screen="path">Learning Path</button>
           <button class="menu-btn" data-screen="achieve">Achievements</button>
         </div>
       </section>
@@ -54,125 +53,128 @@
 
     <!-- LETTERS -->
     <section id="letters" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Letters</h2>
-      <p class="muted">Tap a letter to hear it</p>
+      <section class="panel">
+        <button class="nav-back">← Back</button>
+        <h2>Letters</h2>
+        <p class="muted">Tap a letter to hear it and see a picture.</p>
 
-      <div id="letters-bank" class="letter-bank"></div>
+        <div id="letters-bank"></div>
 
-      <div class="letters-bottom">
-       <div id="word-picture-area" class="picture-area">
-  <div id="word-caption">
-    <div class="big-emoji"></div>
-    <p></p>
-  </div>
-</div>
+        <div class="letters-bottom">
+          <div class="picture-area">
+            <div id="letters-caption"></div>
+          </div>
 
-
-        <div id="letters-drop" class="drop-zone">
-          Drag letters here
+          <div id="letters-drop" class="drop-zone">
+            Tap letters to move them here.
+          </div>
         </div>
-      </div>
+      </section>
     </section>
 
     <!-- WORD BUILDER -->
     <section id="word" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <div class="screen-header">
-        <h2>Word Builder</h2>
-        <div class="level-chip">Level <span id="word-level">1</span> / 10</div>
-      </div>
+      <section class="panel">
+        <button class="nav-back">← Back</button>
+        <div class="screen-header">
+          <h2>Word Builder</h2>
+          <div class="level-chip">Level <span id="word-level">1</span> / 10</div>
+        </div>
 
-      <div id="word-picture-area" class="picture-area">
-        <div id="word-emoji" class="big-emoji"></div>
-        <div id="word-img-caption" class="caption"></div>
-      </div>
+        <div class="picture-area" id="word-caption"></div>
 
-      <div id="word-target" class="target-hint"></div>
-      <div id="word-slots" class="slots"></div>
-      <div id="word-pool" class="pool"></div>
+        <div id="word-target" class="target-hint"></div>
+        <div id="word-slots" class="slots"></div>
+        <div id="word-pool" class="pool"></div>
 
-      <div class="controls">
-        <button id="check-word" class="action">Check</button>
-      </div>
+        <div class="controls">
+          <button id="check-word" class="action">Check</button>
+        </div>
 
-      <div id="word-feedback" class="feedback"></div>
+        <div id="word-feedback" class="feedback"></div>
+      </section>
     </section>
 
     <!-- SENTENCE BUILDER -->
     <section id="sentence" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <div class="screen-header">
-        <h2>Sentence Builder</h2>
-        <div class="level-chip">Level <span id="sent-level">1</span> / 10</div>
-      </div>
+      <section class="panel">
+        <button class="nav-back">← Back</button>
+        <div class="screen-header">
+          <h2>Sentence Builder</h2>
+          <div class="level-chip">Level <span id="sent-level">1</span> / 10</div>
+        </div>
 
-      <p class="muted">Arrange words to make the sentence.</p>
+        <p class="muted">Tap words to place them in the boxes, then press Check.</p>
 
-      <div id="sentence-slots" class="slots"></div>
-      <div id="sentence-pool" class="pool"></div>
+        <div id="sentence-slots" class="slots"></div>
+        <div id="sentence-pool" class="pool"></div>
 
-      <div class="controls">
-        <button id="check-sentence" class="action">Check</button>
-      </div>
+        <div class="controls">
+          <button id="check-sentence" class="action">Check</button>
+        </div>
 
-      <div id="sentence-feedback" class="feedback"></div>
+        <div id="sentence-feedback" class="feedback"></div>
+      </section>
     </section>
 
     <!-- RHYMING GAME -->
     <section id="rhyme" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <div class="screen-header">
-        <h2>Rhyming Game</h2>
-        <div class="level-chip">Level <span id="rhyme-level">1</span> / 10</div>
-      </div>
+      <section class="panel">
+        <button class="nav-back">← Back</button>
+        <div class="screen-header">
+          <h2>Rhyming Game</h2>
+          <div class="level-chip">Level <span id="rhyme-level">1</span> / 10</div>
+        </div>
 
-      <p id="rhyme-target" class="muted"></p>
-      <div id="rhyme-choices" class="pool"></div>
-      <div id="rhyme-feedback" class="feedback"></div>
+        <p id="rhyme-target" class="muted"></p>
+        <div id="rhyme-choices" class="pool"></div>
+        <div id="rhyme-feedback" class="feedback"></div>
+      </section>
     </section>
 
     <!-- TRACING GAME -->
     <section id="tracing" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Letter Tracing</h2>
+      <section class="panel">
+        <button class="nav-back">← Back</button>
+        <h2>Letter Tracing</h2>
+        <p class="muted">Trace the letter with your finger.</p>
 
-      <div class="tracing-container">
-        <!-- 🔧 FIXED ID -->
-        <canvas id="trace-canvas" width="320" height="320"></canvas>
-      </div>
+        <div class="trace-label-wrap">
+          <span id="trace-label" class="trace-label"></span>
+        </div>
 
-      <div class="controls">
-        <button id="trace-prev" class="ghost small">Prev</button>
-        <button id="trace-next" class="ghost small">Next</button>
-      </div>
+        <div class="tracing-container">
+          <canvas id="trace-canvas" width="320" height="320"></canvas>
+        </div>
 
-      <p id="tracing-feedback" class="feedback"></p>
+        <div class="controls">
+          <button id="trace-prev" class="ghost small">Prev</button>
+          <button id="trace-next" class="ghost small">Next</button>
+        </div>
+
+        <p id="trace-feedback" class="feedback"></p>
+      </section>
     </section>
 
     <!-- MATH GAME -->
     <section id="math" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Math Game</h2>
+      <section class="panel">
+        <button class="nav-back">← Back</button>
+        <h2>Math Game</h2>
 
-      <div id="math-problem" class="math-problem"></div>
-      <div id="math-choices" class="pool"></div>
-      <div id="math-feedback" class="feedback"></div>
-    </section>
-
-    <!-- PATH -->
-    <section id="path" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Learning Path</h2>
-      <div id="path-detail" class="path-map large"></div>
-      <p id="path-status" class="feedback"></p>
+        <div id="math-problem" class="math-problem"></div>
+        <div id="math-choices" class="pool"></div>
+        <div id="math-feedback" class="feedback"></div>
+      </section>
     </section>
 
     <!-- ACHIEVEMENTS -->
     <section id="achieve" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Achievements</h2>
-      <div id="ach-list" class="ach-list"></div>
+      <section class="panel">
+        <button class="nav-back">← Back</button>
+        <h2>Achievements</h2>
+        <div id="ach-list" class="ach-list"></div>
+      </section>
     </section>
 
     <footer class="footer">
