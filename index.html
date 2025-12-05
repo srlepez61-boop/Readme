@@ -2,12 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Read & Play</title>
+  <title>Read & Play Learning App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>Read & Play</h1>
+
+  <!-- XP & Level -->
+  <section id="progress">
+    <div>Level: <span id="level-num">1</span></div>
+    <div>XP: <span id="xp-num">0</span></div>
+    <div id="xp-bar"><div id="xp-fill"></div></div>
+  </section>
 
   <!-- LETTER SOUNDS -->
   <section id="letters">
@@ -31,6 +38,9 @@
     <div id="card">?</div>
     <button id="next-card">Next</button>
   </section>
+
+  <!-- REWARD ANIMATION -->
+  <div id="reward-animation" class="hidden">🎉✨⭐</div>
 
   <script src="app.js"></script>
 </body>
