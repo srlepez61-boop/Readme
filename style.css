@@ -235,9 +235,9 @@ body {
 }
 
 .picture-area img {
-  max-width: 140px;
-  max-height: 110px;
+  display: none;
 }
+
 
 .caption {
   margin-top: 4px;
