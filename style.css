@@ -43,7 +43,6 @@ body {
   justify-content: center;
 }
 
-
 .subtitle {
   margin: 0;
   font-size: 0.9rem;
@@ -118,8 +117,8 @@ body {
   cursor: pointer;
 }
 
-/* LETTERS */
-.letter-bank {
+/* LETTERS (patched to match JS IDs) */
+#letters-bank {
   display: grid;
   grid-template-columns: repeat(13, 1fr);
   gap: 8px;
@@ -157,8 +156,9 @@ body {
   justify-content: center;
 }
 
-/* DROPPING */
-.drop-zone {
+/* DROP ZONES */
+.drop-zone,
+#letters-drop {
   background: #eef2f6;
   border-radius: 14px;
   border: 3px dashed #aaa;
@@ -176,17 +176,17 @@ body {
   cursor: grab;
 }
 
-/* TRACING */
+/* TRACING (patched ID) */
+#trace-canvas {
+  background: #fff7d1;
+  border-radius: 20px;
+  border: 3px solid #f4d28c;
+}
+
 .tracing-container {
   display: flex;
   justify-content: center;
   margin-top: 12px;
-}
-
-#tracing-canvas {
-  background: #fff7d1;
-  border-radius: 20px;
-  border: 3px solid #f4d28c;
 }
 
 /* MATH GAME */
@@ -242,4 +242,6 @@ body {
 }
 
 .ach-icon { font-size: 1.4rem; }
+
+/* Locked state (used by JS opacity) */
 .ach-card.locked { opacity: 0.4; }
