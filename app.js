@@ -46,7 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (levelNum > maxLevelReached) {
       maxLevelReached = levelNum;
       renderPathMap();
-      renderPathDetail();
       renderAchievements();
     }
   }
@@ -73,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------------------------------------------------
-   * LETTERS GAME — FULL A–Z IN TWO ROWS
+   * LETTERS A–Z
    * --------------------------------------------------- */
   const lettersBank = document.getElementById("letters-bank");
   const lettersDrop = document.getElementById("letters-drop");
@@ -164,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------------------------------------------------
-   * WORD BUILDER GAME
+   * WORD BUILDER
    * --------------------------------------------------- */
   const WORD_LEVELS = [
     "CAT", "DOG", "SUN", "FROG", "FISH",
@@ -186,26 +185,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let wordLevelIndex = 0;
 
-  const wordLevelLabel = document.getElementById("word-level");
+  const wordCaption = document.getElementById("word-caption");
   const wordTarget = document.getElementById("word-target");
   const wordSlots = document.getElementById("word-slots");
   const wordPool = document.getElementById("word-pool");
   const wordFeedback = document.getElementById("word-feedback");
-  const wordImgCaption = document.getElementById("word-img-caption");
   const checkWordBtn = document.getElementById("check-word");
-  const wordPrev = document.getElementById("word-prev");
-  const wordNext = document.getElementById("word-next");
 
   function articleFor(word) {
     return /^[aeiou]/i.test(word) ? "an" : "a";
   }
 
-  function showWordPicture(word) {
-    if (!wordImgCaption) return;
+  function showWordEmoji(word) {
+    if (!wordCaption) return;
     const emoji = WORD_EMOJIS[word] || "⭐";
     const a = articleFor(word);
     const caption = `This is ${a} ${word.toLowerCase()}.`;
-    wordImgCaption.innerHTML = `
+    wordCaption.innerHTML = `
       <div class="big-emoji">${emoji}</div>
       <div>${caption}</div>
     `;
@@ -214,16 +210,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderWordLevel() {
     if (!wordTarget || !wordSlots || !wordPool || !wordFeedback) return;
     const word = WORD_LEVELS[wordLevelIndex];
-    wordLevelLabel.textContent = wordLevelIndex + 1;
 
     wordTarget.textContent = `Build the word: ${word}`;
     wordSlots.innerHTML = "";
     wordPool.innerHTML = "";
     wordFeedback.textContent = "";
+    showWordEmoji(word);
 
-    showWordPicture(word);
-
-    // Slots
+    // Create slots
     for (let i = 0; i < word.length; i++) {
       const slot = document.createElement("div");
       slot.className = "slot";
@@ -248,11 +242,9 @@ document.addEventListener("DOMContentLoaded", () => {
       token.textContent = ch;
       token.dataset.id = `w-${wordLevelIndex}-${idx}`;
       token.setAttribute("draggable", "true");
-
       token.addEventListener("dragstart", e => {
         e.dataTransfer.setData("text/plain", token.dataset.id);
       });
-
       wordPool.appendChild(token);
     });
 
@@ -268,9 +260,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     });
-  }
 
-  if (wordPool) {
+    // allow dragging back to pool
     wordPool.addEventListener("dragover", e => e.preventDefault());
     wordPool.addEventListener("drop", e => {
       e.preventDefault();
@@ -292,31 +283,18 @@ document.addEventListener("DOMContentLoaded", () => {
         speak(word);
         addXP(8);
         markLevelCompleted(wordLevelIndex + 1);
+        if (wordLevelIndex < WORD_LEVELS.length - 1) {
+          wordLevelIndex++;
+          renderWordLevel();
+        }
       } else {
         wordFeedback.textContent = "❌ Try again!";
       }
     });
   }
 
-  if (wordPrev) {
-    wordPrev.addEventListener("click", () => {
-      if (wordLevelIndex > 0) {
-        wordLevelIndex--;
-        renderWordLevel();
-      }
-    });
-  }
-  if (wordNext) {
-    wordNext.addEventListener("click", () => {
-      if (wordLevelIndex < WORD_LEVELS.length - 1) {
-        wordLevelIndex++;
-        renderWordLevel();
-      }
-    });
-  }
-
   /* ---------------------------------------------------
-   * SENTENCE BUILDER (with emoji reward)
+   * SENTENCE BUILDER
    * --------------------------------------------------- */
   const SENTENCE_LEVELS = [
     "I see a cat",
@@ -354,21 +332,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let sentLevelIndex = 0;
 
-  const sentLevelLabel = document.getElementById("sent-level");
   const sentSlots = document.getElementById("sentence-slots");
   const sentPool = document.getElementById("sentence-pool");
   const sentFeedback = document.getElementById("sentence-feedback");
   const checkSentBtn = document.getElementById("check-sentence");
-  const sentPrev = document.getElementById("sent-prev");
-  const sentNext = document.getElementById("sent-next");
 
   function renderSentenceLevel() {
     if (!sentSlots || !sentPool || !sentFeedback) return;
     const sentence = SENTENCE_LEVELS[sentLevelIndex];
-    const levelNum = sentLevelIndex + 1;
-    sentLevelLabel.textContent = levelNum;
-
     const words = sentence.split(" ");
+
     sentSlots.innerHTML = "";
     sentPool.innerHTML = "";
     sentFeedback.innerHTML = "";
@@ -387,11 +360,9 @@ document.addEventListener("DOMContentLoaded", () => {
       token.textContent = word;
       token.dataset.id = `s-${sentLevelIndex}-${idx}`;
       token.setAttribute("draggable", "true");
-
       token.addEventListener("dragstart", e => {
         e.dataTransfer.setData("text/plain", token.dataset.id);
       });
-
       sentPool.appendChild(token);
     });
 
@@ -407,9 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     });
-  }
 
-  if (sentPool) {
     sentPool.addEventListener("dragover", e => e.preventDefault());
     sentPool.addEventListener("drop", e => {
       e.preventDefault();
@@ -436,32 +405,18 @@ document.addEventListener("DOMContentLoaded", () => {
         speak(sentence);
         addXP(10);
         markLevelCompleted(sentLevelIndex + 1);
+        if (sentLevelIndex < SENTENCE_LEVELS.length - 1) {
+          sentLevelIndex++;
+          renderSentenceLevel();
+        }
       } else {
         sentFeedback.textContent = "❌ Not quite. Try again!";
       }
     });
   }
 
-  if (sentPrev) {
-    sentPrev.addEventListener("click", () => {
-      if (sentLevelIndex > 0) {
-        sentLevelIndex--;
-        renderSentenceLevel();
-      }
-    });
-  }
-
-  if (sentNext) {
-    sentNext.addEventListener("click", () => {
-      if (sentLevelIndex < SENTENCE_LEVELS.length - 1) {
-        sentLevelIndex++;
-        renderSentenceLevel();
-      }
-    });
-  }
-
   /* ---------------------------------------------------
-   * RHYMING GAME (with emoji reward)
+   * RHYMING GAME
    * --------------------------------------------------- */
   const RHYME_LEVELS = [
     { base: "cat",   correct: "hat",   others: ["dog", "bus"] },
@@ -503,18 +458,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let rhymeLevelIndex = 0;
 
-  const rhymeLevelLabel = document.getElementById("rhyme-level");
   const rhymeTarget = document.getElementById("rhyme-target");
   const rhymeChoices = document.getElementById("rhyme-choices");
   const rhymeFeedback = document.getElementById("rhyme-feedback");
-  const rhymePrev = document.getElementById("rhyme-prev");
-  const rhymeNext = document.getElementById("rhyme-next");
 
   function renderRhymeLevel() {
     if (!rhymeTarget || !rhymeChoices || !rhymeFeedback) return;
     const level = RHYME_LEVELS[rhymeLevelIndex];
-    const levelNum = rhymeLevelIndex + 1;
-    rhymeLevelLabel.textContent = levelNum;
 
     rhymeChoices.innerHTML = "";
     rhymeFeedback.textContent = "";
@@ -533,7 +483,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const btn = document.createElement("button");
       btn.className = "token";
       btn.textContent = word;
-
       btn.addEventListener("click", () => {
         if (word === level.correct) {
           rhymeFeedback.innerHTML = `
@@ -544,29 +493,15 @@ document.addEventListener("DOMContentLoaded", () => {
           speak(`${level.base} rhymes with ${word}.`);
           addXP(6);
           markLevelCompleted(rhymeLevelIndex + 1);
+          if (rhymeLevelIndex < RHYME_LEVELS.length - 1) {
+            rhymeLevelIndex++;
+            setTimeout(renderRhymeLevel, 900);
+          }
         } else {
           rhymeFeedback.textContent = "❌ Try again!";
         }
       });
-
       rhymeChoices.appendChild(btn);
-    });
-  }
-
-  if (rhymePrev) {
-    rhymePrev.addEventListener("click", () => {
-      if (rhymeLevelIndex > 0) {
-        rhymeLevelIndex--;
-        renderRhymeLevel();
-      }
-    });
-  }
-  if (rhymeNext) {
-    rhymeNext.addEventListener("click", () => {
-      if (rhymeLevelIndex < RHYME_LEVELS.length - 1) {
-        rhymeLevelIndex++;
-        renderRhymeLevel();
-      }
     });
   }
 
@@ -580,14 +515,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let traceIndex = 0;
 
-  const traceLevelLabel = document.getElementById("trace-level");
+  const traceLabel = document.getElementById("trace-label");
   const traceCanvas = document.getElementById("trace-canvas");
   const traceFeedback = document.getElementById("trace-feedback");
   const tracePrev = document.getElementById("trace-prev");
   const traceNext = document.getElementById("trace-next");
-  const traceClear = document.getElementById("trace-clear");
-  const traceShow = document.getElementById("trace-show");
-  const traceCheck = document.getElementById("trace-check");
 
   let traceCtx = traceCanvas ? traceCanvas.getContext("2d") : null;
   let isDrawing = false;
@@ -601,45 +533,37 @@ document.addEventListener("DOMContentLoaded", () => {
     drawnPoints = 0;
   }
 
-  function drawGuideLetterAnimated(char) {
+  function drawTraceGuide(char) {
     if (!traceCtx || !traceCanvas) return;
     clearTraceCanvas();
     const ctx = traceCtx;
     const w = traceCanvas.width;
     const h = traceCanvas.height;
 
-    ctx.lineWidth = 6;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    // Light background letter
+    // faint background letter
     ctx.save();
     ctx.globalAlpha = 0.13;
-    ctx.font = "200px Arial";
+    ctx.font = "260px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#999";
     ctx.fillText(char, w / 2, h / 2);
     ctx.restore();
 
-    // Animated "stroke" effect (fade-in stronger outline)
+    // animated outline
     let alpha = 0;
     function step() {
-      if (!traceCtx) return;
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.strokeStyle = "#ff7f50";
-      ctx.lineWidth = 8;
-      ctx.font = "200px Arial";
+      ctx.lineWidth = 10;
+      ctx.font = "260px Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.strokeText(char, w / 2, h / 2);
       ctx.restore();
-
-      alpha += 0.06;
-      if (alpha <= 1) {
-        requestAnimationFrame(step);
-      }
+      alpha += 0.05;
+      if (alpha <= 1) requestAnimationFrame(step);
     }
     step();
   }
@@ -668,15 +592,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function endDraw() {
+    if (!isDrawing) return;
     isDrawing = false;
+    if (!traceFeedback) return;
+    if (drawnPoints > 40) {
+      const char = TRACING_CHARS[traceIndex];
+      traceFeedback.innerHTML = `
+        <div class="big-emoji">⭐</div>
+        <p>Nice tracing of <strong>${char}</strong>!</p>
+      `;
+      speak(`Great tracing of ${char}!`);
+      addXP(7);
+      markLevelCompleted(traceIndex + 1);
+    }
   }
 
   function getCanvasPos(evt) {
     if (!traceCanvas) return { x: 0, y: 0 };
     const rect = traceCanvas.getBoundingClientRect();
+    const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+    const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
     return {
-      x: ((evt.clientX || (evt.touches && evt.touches[0].clientX)) - rect.left),
-      y: ((evt.clientY || (evt.touches && evt.touches[0].clientY)) - rect.top)
+      x: clientX - rect.left,
+      y: clientY - rect.top
     };
   }
 
@@ -711,47 +649,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderTracingLevel() {
-    if (!traceLevelLabel || !traceFeedback) return;
-    const total = TRACING_CHARS.length;
-    traceLevelLabel.textContent = `${traceIndex + 1} / ${total}`;
-    traceFeedback.textContent = "";
-
+    if (!traceLabel || !traceCanvas) return;
     const char = TRACING_CHARS[traceIndex];
-    drawGuideLetterAnimated(char);
-  }
-
-  if (traceClear) {
-    traceClear.addEventListener("click", () => {
-      clearTraceCanvas();
-      const char = TRACING_CHARS[traceIndex];
-      drawGuideLetterAnimated(char);
-      if (traceFeedback) traceFeedback.textContent = "";
-    });
-  }
-
-  if (traceShow) {
-    traceShow.addEventListener("click", () => {
-      const char = TRACING_CHARS[traceIndex];
-      drawGuideLetterAnimated(char);
-    });
-  }
-
-  if (traceCheck) {
-    traceCheck.addEventListener("click", () => {
-      if (!traceFeedback) return;
-      if (drawnPoints > 20) {
-        const char = TRACING_CHARS[traceIndex];
-        traceFeedback.innerHTML = `
-          <div class="big-emoji">⭐</div>
-          <p>Nice tracing of <strong>${char}</strong>!</p>
-        `;
-        speak(`Great tracing of ${char}!`);
-        addXP(7);
-        markLevelCompleted(traceIndex + 1);
-      } else {
-        traceFeedback.textContent = "Try tracing on the letter!";
-      }
-    });
+    traceLabel.textContent = char;
+    if (traceFeedback) traceFeedback.textContent = "";
+    drawTraceGuide(char);
   }
 
   if (tracePrev) {
@@ -774,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------------------------------------------------
-   * MATH GAME (addition & subtraction, emoji + numbers)
+   * MATH GAME
    * --------------------------------------------------- */
   const MATH_LEVELS = [
     { a: 1, b: 2, op: "+", emoji: "🍎" },
@@ -791,94 +693,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let mathIndex = 0;
 
-  const mathLevelLabel = document.getElementById("math-level");
   const mathProblem = document.getElementById("math-problem");
-  const mathEmojiRow = document.getElementById("math-emoji-row");
   const mathChoices = document.getElementById("math-choices");
   const mathFeedback = document.getElementById("math-feedback");
-  const mathPrev = document.getElementById("math-prev");
-  const mathNext = document.getElementById("math-next");
 
   function getMathAnswer(level) {
-    return level.op === "+"
-      ? level.a + level.b
-      : level.a - level.b;
+    return level.op === "+" ? level.a + level.b : level.a - level.b;
   }
 
   function renderMathLevel() {
-    if (!mathProblem || !mathEmojiRow || !mathChoices || !mathFeedback) return;
-
+    if (!mathProblem || !mathChoices || !mathFeedback) return;
     const level = MATH_LEVELS[mathIndex];
     const ans = getMathAnswer(level);
-    const totalLevels = MATH_LEVELS.length;
 
-    if (mathLevelLabel) {
-      mathLevelLabel.textContent = `${mathIndex + 1} / ${totalLevels}`;
-    }
+    mathProblem.textContent =
+      `${level.emoji.repeat(level.a)} ${level.op} ${level.emoji.repeat(level.b)}  (${level.a} ${level.op} ${level.b} = ? )`;
 
-    // Emoji row
-    mathEmojiRow.innerHTML = "";
-    for (let i = 0; i < level.a; i++) {
-      mathEmojiRow.textContent += level.emoji;
-    }
-    mathEmojiRow.textContent += `  ${level.op}  `;
-    for (let i = 0; i < level.b; i++) {
-      mathEmojiRow.textContent += level.emoji;
-    }
-
-    // Numeric part
-    mathProblem.textContent = `${level.a} ${level.op} ${level.b} = ?`;
     mathChoices.innerHTML = "";
     mathFeedback.textContent = "";
 
-    // generate 3 options: 1 correct, 2 wrong
     const options = new Set([ans]);
     while (options.size < 3) {
       const delta = Math.floor(Math.random() * 3) + 1;
       const wrong = Math.random() < 0.5 ? ans - delta : ans + delta;
       if (wrong >= 0 && wrong <= 20) options.add(wrong);
     }
-    const optionArr = Array.from(options).sort(() => Math.random() - 0.5);
+    const arr = Array.from(options).sort(() => Math.random() - 0.5);
 
-    optionArr.forEach(value => {
+    arr.forEach(val => {
       const btn = document.createElement("button");
-      btn.className = "token";
-      btn.textContent = value;
-
+      btn.textContent = val;
       btn.addEventListener("click", () => {
-        if (value === ans) {
+        if (val === ans) {
           mathFeedback.innerHTML = `
             <div class="big-emoji">${level.emoji}</div>
             <p>Great job!</p>
             <p>${level.a} ${level.op} ${level.b} = ${ans}</p>
           `;
-          speak(`${level.a} ${level.op === "+" ? "plus" : "minus"} ${level.b} equals ${ans}.`);
+          speak(
+            `${level.a} ${level.op === "+" ? "plus" : "minus"} ${level.b} equals ${ans}.`
+          );
           addXP(9);
           markLevelCompleted(mathIndex + 1);
+          if (mathIndex < MATH_LEVELS.length - 1) {
+            mathIndex++;
+            setTimeout(renderMathLevel, 1000);
+          }
         } else {
           mathFeedback.textContent = "❌ Not quite. Try again!";
         }
       });
-
       mathChoices.appendChild(btn);
-    });
-  }
-
-  if (mathPrev) {
-    mathPrev.addEventListener("click", () => {
-      if (mathIndex > 0) {
-        mathIndex--;
-        renderMathLevel();
-      }
-    });
-  }
-
-  if (mathNext) {
-    mathNext.addEventListener("click", () => {
-      if (mathIndex < MATH_LEVELS.length - 1) {
-        mathIndex++;
-        renderMathLevel();
-      }
     });
   }
 
@@ -886,27 +751,20 @@ document.addEventListener("DOMContentLoaded", () => {
    * LEARNING PATH
    * --------------------------------------------------- */
   const pathMap = document.getElementById("path-map");
-  const pathDetail = document.getElementById("path-detail");
   const pathStatus = document.getElementById("path-status");
 
-  function renderPath(container) {
-    if (!container) return;
-    container.innerHTML = "";
+  function renderPathMap() {
+    if (!pathMap) return;
+    pathMap.innerHTML = "";
     for (let i = 1; i <= 10; i++) {
       const node = document.createElement("div");
       node.className = "path-node";
+      if (i <= maxLevelReached) node.style.background = "#7dd37d";
       node.textContent = i;
-      if (i <= maxLevelReached) node.classList.add("done");
-      if (i === maxLevelReached) node.classList.add("current");
-      container.appendChild(node);
+      pathMap.appendChild(node);
     }
-  }
-
-  function renderPathMap() { renderPath(pathMap); }
-  function renderPathDetail() {
-    renderPath(pathDetail);
     if (pathStatus) {
-      pathStatus.textContent = `Highest level reached: ${maxLevelReached} / 10`;
+      pathStatus.textContent = `Highest level reached so far: ${maxLevelReached} / 10`;
     }
   }
 
@@ -933,7 +791,8 @@ document.addEventListener("DOMContentLoaded", () => {
         (a.level && maxLevelReached >= a.level);
 
       const card = document.createElement("div");
-      card.className = "ach-card" + (unlocked ? "" : " locked");
+      card.className = "ach-card";
+      if (!unlocked) card.style.opacity = "0.4";
 
       const icon = document.createElement("div");
       icon.className = "ach-icon";
@@ -960,7 +819,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTracingLevel();
   renderMathLevel();
   renderPathMap();
-  renderPathDetail();
   renderAchievements();
   updateXPUI();
 });
