@@ -24,24 +24,28 @@
   <!-- LETTER SOUNDS -->
   <section id="letters">
     <h2>Tap a letter to hear its sound</h2>
-    <div class="letter-grid"></div>
+    <div class="letter-grid" aria-hidden="false"></div>
   </section>
 
   <!-- WORD BUILDER -->
   <section id="word-builder">
     <h2>Build the word</h2>
     <img id="pic" src="" alt="picture" />
-    <div id="slots"></div>
-    <div id="letters-pool"></div>
-    <button id="check-btn">Check</button>
+    <div id="slots" aria-label="word slots"></div>
+    <div id="letters-pool" aria-label="letters pool"></div>
+    <div class="controls">
+      <button id="check-btn">Check</button>
+      <button id="shuffle-btn">Shuffle</button>
+      <button id="hint-btn">Hint</button>
+    </div>
     <p id="msg"></p>
   </section>
 
   <!-- SENTENCE BUILDER -->
   <section id="sentence-builder">
     <h2>Build the sentence</h2>
-    <div id="sentence-slots"></div>
-    <div id="sentence-pool"></div>
+    <div id="sentence-slots" aria-label="sentence slots"></div>
+    <div id="sentence-pool" aria-label="sentence pool"></div>
     <button id="check-sentence-btn">Check</button>
     <p id="sentence-msg"></p>
   </section>
@@ -55,7 +59,7 @@
   </section>
 
   <!-- REWARD SCREEN -->
-  <div id="reward-screen" class="hidden">
+  <div id="reward-screen" class="hidden" aria-hidden="true">
     <h2>🏆 Congratulations!</h2>
     <p>You completed all levels!</p>
     <canvas id="confetti"></canvas>
