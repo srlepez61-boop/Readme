@@ -16,7 +16,7 @@
       <img id="bubba" src="bubba.png" alt="Bubba" />
       <div>
         <h1>Bubba’s Reading Adventure</h1>
-        <p class="subtitle">Explore 10 levels in each game!</p>
+        <p class="subtitle">Explore fun activities with Bubba!</p>
       </div>
     </div>
 
@@ -33,7 +33,7 @@
   <main id="menu" class="screen">
     <section class="panel">
       <h2>Adventure Map</h2>
-      <p class="muted">Choose a game or follow Bubba across all 10 levels!</p>
+      <p class="muted">Choose a game with Bubba!</p>
 
       <div id="path-map" class="path-map"></div>
 
@@ -54,7 +54,7 @@
 
     <div class="screen-header">
       <h2>Letters</h2>
-      <div class="level-chip">Level <span id="letters-level">1</span> / 10</div>
+      <div class="level-chip">A–Z</div>
     </div>
 
     <p class="muted">Tap a letter to see and hear what it stands for.</p>
@@ -69,10 +69,6 @@
       <div id="letters-drop" class="drop-zone">Drop letters here</div>
     </div>
 
-    <div class="controls">
-      <button id="letters-prev" class="ghost small">◀ Prev</button>
-      <button id="letters-next" class="ghost small">Next ▶</button>
-    </div>
   </section>
 
   <!-- WORD BUILDER -->
@@ -146,7 +142,7 @@
   <section id="path" class="screen hidden">
     <button class="nav-back">← Back</button>
     <h2>Learning Path</h2>
-    <p class="muted">Complete levels to fill the path!</p>
+    <p class="muted">Complete levels to move along the path!</p>
 
     <div id="path-detail" class="path-map large"></div>
     <p id="path-status" class="feedback"></p>
@@ -156,8 +152,6 @@
   <section id="achieve" class="screen hidden">
     <button class="nav-back">← Back</button>
     <h2>Achievements</h2>
-    <p class="muted">Earn badges by progressing through the adventure!</p>
-
     <div id="ach-list" class="ach-list"></div>
   </section>
 
@@ -168,6 +162,7 @@
   <audio id="ding-sound" src="sounds/ding.mp3" preload="auto"></audio>
 
 </div>
+
 <script src="app.js"></script>
 </body>
 </html>
