@@ -1,53 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap');
-
+/* ---------- FONT & BODY ---------- */
 body {
   font-family: 'Baloo 2', cursive;
   text-align: center;
-  background: #fff5e6;
   margin: 0;
   padding: 1rem;
+  background: #fff5e6;
 }
 
-h1 { color: #ff6f00; font-weight: 700; font-size: 2.5rem; margin-bottom: 1rem; }
-h2 { color: #ff8f00; font-weight: 700; margin-bottom: 0.5rem; }
+h1 { color: #ff6f00; font-size: 2.5rem; margin:0.5rem; }
+h2 { color: #ff8f00; font-size: 1.5rem; }
 
-#progress { margin-bottom: 1rem; }
-#xp-bar { width: 80%; height: 20px; border: 2px solid #ffb300; margin: 0.5rem auto; border-radius: 10px; background:#ffe082; }
-#xp-fill { height: 100%; width: 0%; background:#ffd54f; border-radius: 8px; transition: width 0.5s; }
+button { font-family: inherit; cursor: pointer; transition: 0.2s; }
 
-.letter-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; }
-.letter-grid button { font-family: 'Baloo 2', cursive; font-weight: 700; font-size: 2rem; padding: 0.5rem; border: none; background: #ffe082; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
-.letter-grid button:active, .letter-grid button:hover { background: #ffd54f; transform: scale(1.1); }
+.game-section { display: none; margin-top: 1rem; }
+.game-section.active { display: block; }
 
-#slots { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
-.slot { width: 50px; height: 50px; border: 2px dashed #999; border-radius: 10px; line-height: 50px; font-size: 2rem; background: #fafafa; }
-.letter-chip { display: inline-block; margin: 0.25rem; padding: 0.5rem 1rem; font-size: 1.5rem; font-weight: 700; background: #e3f2fd; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
-.letter-chip:hover { background: #90caf9; transform: scale(1.05); }
+#letters-pool, .letter-grid, #rhyme-options, #sentence-pool { display: flex; flex-wrap: wrap; justify-content: center; gap:0.5rem; margin:0.5rem 0; }
+.slot, .letter-chip { width:50px; height:50px; line-height:50px; font-size:1.5rem; border-radius:10px; background:#ffe082; font-weight:700; display:inline-block; }
+.slot { border:2px dashed #999; cursor:pointer; }
+.letter-chip { cursor:pointer; }
 
-#pic { height: 120px; margin-bottom: 0.5rem; }
-#check-btn { font-family: 'Baloo 2', cursive; font-weight: 700; font-size: 1.2rem; padding: 0.5rem 1rem; margin-top: 0.5rem; border-radius: 10px; border: 2px solid #ffb300; background: #ffe082; cursor: pointer; transition: all 0.2s; }
-#check-btn:hover { background: #ffd54f; transform: scale(1.05); }
+#check-btn, #next-card, #check-sentence { padding:0.5rem 1rem; border-radius:10px; margin-top:0.5rem; background:#ffb300; border:none; }
 
-#msg { font-size: 1.2rem; margin-top: 0.5rem; font-weight: 700; }
+#xp-bar { width:80%; margin:0.5rem auto; background:#ccc; height:20px; border-radius:10px; position:relative; }
+#xp-fill { height:100%; background:#4caf50; width:0%; border-radius:10px; transition:width 0.5s; }
+#xp-num { position:absolute; top:0; left:50%; transform:translateX(-50%); font-weight:bold; }
 
-#card { font-family: 'Baloo 2', cursive; font-weight: 700; font-size: 3rem; padding: 2rem; background: #e8f5e9; border-radius: 12px; margin: 1rem auto; width: 200px; cursor: pointer; transition: all 0.2s; }
-#card:hover { background: #c8e6c9; transform: scale(1.05); }
-#next-card { font-family: 'Baloo 2', cursive; font-weight: 700; font-size: 1.2rem; padding: 0.5rem 1rem; border-radius: 10px; border: 2px solid #43a047; background: #a5d6a7; cursor: pointer; transition: all 0.2s; }
-#next-card:hover { background: #81c784; transform: scale(1.05); }
+#reward-animation { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:2rem; background:#ffd54f; padding:1rem 2rem; border-radius:20px; display:none; }
 
-#reward-animation { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; animation: pop 1s ease-out forwards; z-index:100; }
-#reward-animation.hidden { display:none; }
+.hidden { display:none; }
 
-@keyframes pop {
-  0% { transform: scale(0) translate(-50%, -50%); opacity: 0; }
-  50% { transform: scale(1.5) translate(-50%, -50%); opacity: 1; }
-  100% { transform: scale(1) translate(-50%, -50%); opacity: 1; }
-}
-
-@media (max-width: 600px) {
-  .letter-grid button { font-size: 2.5rem; padding: 0.7rem; }
-  .slot { width: 60px; height: 60px; line-height: 60px; font-size: 2.2rem; }
-  .letter-chip { font-size: 1.8rem; padding: 0.6rem 1.2rem; }
-  #check-btn, #next-card { font-size: 1.4rem; padding: 0.6rem 1.2rem; }
-  #pic { height: 140px; }
-}
+.path-node { display:inline-block; width:30px; height:30px; border-radius:50%; background:#ccc; margin:0 5px; line-height:30px; color:#fff; font-weight:bold; }
+.path-node.completed { background:#4caf50; }
+.path-node.current { background:#ff9800; }
