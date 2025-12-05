@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-  /* ------------------------------------------------------------------
-   * BASIC NAV / STATE
-   * ------------------------------------------------------------------ */
+  /* ---------------------------------------------------
+   * NAVIGATION
+   * --------------------------------------------------- */
   const screens = document.querySelectorAll(".screen");
   const menuButtons = document.querySelectorAll(".menu-btn");
   const backButtons = document.querySelectorAll(".nav-back");
@@ -20,39 +20,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showScreen("menu");
 
-  /* ------------------------------------------------------------------
-   * XP + PROGRESSION
-   * ------------------------------------------------------------------ */
-  let xp = 0;             // 0–100
-  let maxLevelReached = 1; // for learning path (1–10)
+  /* ---------------------------------------------------
+   * XP & PATH PROGRESSION
+   * --------------------------------------------------- */
+  let xp = 0;              // 0–100
+  let maxLevelReached = 1; // 1–10
 
   const xpBar = document.getElementById("xp-bar-inner");
   const xpText = document.getElementById("xp-text");
 
-  function addXP(amount = 10) {
-    xp = Math.min(100, xp + amount);
+  function updateXPUI() {
     xpBar.style.width = xp + "%";
     xpText.textContent = `${xp} / 100`;
   }
 
-  // If a level index (1–10) is completed, update map
-  function markLevelCompleted(levelNum) {
-    if (levelNum > maxLevelReached) {
-      maxLevelReached = levelNum;
-    }
-    renderPathMap();
-    renderPathDetail();
+  function addXP(amount = 5) {
+    xp = Math.min(100, xp + amount);
+    updateXPUI();
     renderAchievements();
   }
 
-  /* ------------------------------------------------------------------
-   * TTS helper
-   * ------------------------------------------------------------------ */
+  function markLevelCompleted(levelNum) {
+    if (levelNum > maxLevelReached) {
+      maxLevelReached = levelNum;
+      renderPathMap();
+      renderPathDetail();
+      renderAchievements();
+    }
+  }
+
+  /* ---------------------------------------------------
+   * SPEECH + DING
+   * --------------------------------------------------- */
   function speak(text) {
     if (!("speechSynthesis" in window)) return;
     const msg = new SpeechSynthesisUtterance(text);
-    msg.rate = 0.95;
-    msg.pitch = 1.05;
+    msg.rate = 0.9;
+    msg.pitch = 1.1;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(msg);
   }
@@ -66,11 +70,11 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch {}
   }
 
-  /* ------------------------------------------------------------------
-   * DATA FOR LEVELS
-   * ------------------------------------------------------------------ */
+  /* ---------------------------------------------------
+   * DATA
+   * --------------------------------------------------- */
 
-  // LETTER LEVELS: each level has a subset of letters to practice
+  // Letters grouped into 10 levels
   const LETTER_LEVELS = [
     ["A", "B", "C"],
     ["D", "E", "F"],
@@ -84,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ["Z"]
   ];
 
-  // Word images (optional: ensure these exist in img/)
   const LETTER_DATA = {
     A: { word: "Apple", img: "img/A.png" },
     B: { word: "Ball", img: "img/B.png" },
@@ -94,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     F: { word: "Fish", img: "img/F.png" },
     G: { word: "Goat", img: "img/G.png" },
     H: { word: "Hat", img: "img/H.png" },
-    I: { word: "Ice cream", img: "img/I.png" },
+    I: { word: "Ice Cream", img: "img/I.png" },
     J: { word: "Jelly", img: "img/J.png" },
     K: { word: "Kite", img: "img/K.png" },
     L: { word: "Lion", img: "img/L.png" },
@@ -114,13 +117,24 @@ document.addEventListener("DOMContentLoaded", () => {
     Z: { word: "Zebra", img: "img/Z.png" }
   };
 
-  // WORD BUILDER LEVELS (10 words)
   const WORD_LEVELS = [
     "CAT","DOG","SUN","FROG","FISH",
     "BIRD","TREE","MILK","CLOUD","SNAKE"
   ];
 
-  // SENTENCE LEVELS
+  const WORD_IMAGES = {
+    CAT: "img/CAT.png",
+    DOG: "img/DOG.png",
+    SUN: "img/SUN.png",
+    FROG: "img/FROG.png",
+    FISH: "img/FISH.png",
+    BIRD: "img/BIRD.png",
+    TREE: "img/TREE.png",
+    MILK: "img/MILK.png",
+    CLOUD: "img/CLOUD.png",
+    SNAKE: "img/SNAKE.png"
+  };
+
   const SENTENCE_LEVELS = [
     "I see a cat",
     "The dog runs fast",
@@ -134,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "The bird can fly"
   ];
 
-  // RHYMING LEVELS
   const RHYME_LEVELS = [
     { base: "cat", correct: "hat", others: ["dog","bus"] },
     { base: "sun", correct: "run", others: ["cup","fish"] },
@@ -148,10 +161,10 @@ document.addEventListener("DOMContentLoaded", () => {
     { base: "mouse", correct: "house", others: ["ship","lake"] }
   ];
 
-  /* ------------------------------------------------------------------
+  /* ---------------------------------------------------
    * LETTERS GAME
-   * ------------------------------------------------------------------ */
-  let lettersLevelIndex = 0; // 0–9
+   * --------------------------------------------------- */
+  let lettersLevelIndex = 0;
 
   const lettersLevelLabel = document.getElementById("letters-level");
   const lettersBank = document.getElementById("letters-bank");
@@ -164,37 +177,46 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderLettersLevel() {
     const levelNum = lettersLevelIndex + 1;
     lettersLevelLabel.textContent = levelNum;
+
     lettersBank.innerHTML = "";
     lettersDrop.innerHTML = "Drop letters here";
+    lettersPic.style.display = "none";
+    lettersCaption.textContent = "";
 
-    const letters = LETTER_LEVELS[lettersLevelIndex];
-    letters.forEach(ch => {
+    const levelLetters = LETTER_LEVELS[lettersLevelIndex];
+
+    levelLetters.forEach(ch => {
       const btn = document.createElement("button");
       btn.className = "letter-tile";
       btn.textContent = ch;
       btn.dataset.letter = ch;
       btn.setAttribute("draggable","true");
+
       btn.addEventListener("dragstart", e => {
         e.dataTransfer.setData("text/plain", ch);
       });
+
       btn.addEventListener("click", () => {
         const d = LETTER_DATA[ch];
         if (d) {
-          speak(`${ch}. ${d.word}.`);
-          showLettersPicture(d.img, `${ch} — ${d.word}`);
+          const sentence = `${ch} is for ${d.word}.`;
+          speak(sentence);
+          showLettersPicture(d.img, sentence);
         } else {
           speak(ch);
         }
       });
+
       lettersBank.appendChild(btn);
     });
-
-    lettersPic.style.display = "none";
-    lettersCaption.textContent = "";
   }
 
   function showLettersPicture(src, caption) {
-    if (!src) { lettersPic.style.display="none"; lettersCaption.textContent=""; return; }
+    if (!src) {
+      lettersPic.style.display = "none";
+      lettersCaption.textContent = "";
+      return;
+    }
     lettersPic.src = src;
     lettersPic.onload = () => {
       lettersPic.style.display = "block";
@@ -218,15 +240,19 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     lettersDrop.classList.remove("hover");
     const letter = e.dataTransfer.getData("text/plain");
-    const tile = lettersBank.querySelector(`[data-letter="${letter}"]`) ||
-                 lettersDrop.querySelector(`[data-letter="${letter}"]`);
+    const tile =
+      lettersBank.querySelector(`[data-letter="${letter}"]`) ||
+      lettersDrop.querySelector(`[data-letter="${letter}"]`);
+
     if (tile) {
       lettersDrop.appendChild(tile);
       tile.style.transform = "scale(1.1)";
-      setTimeout(() => tile.style.transform = "scale(1)", 150);
+      setTimeout(() => (tile.style.transform = "scale(1)"), 150);
       ding();
-      // When all letters are in box, give XP & mark path
-      if (lettersDrop.querySelectorAll(".letter-tile").length === LETTER_LEVELS[lettersLevelIndex].length) {
+
+      const neededCount = LETTER_LEVELS[lettersLevelIndex].length;
+      const inDrop = lettersDrop.querySelectorAll(".letter-tile").length;
+      if (inDrop === neededCount) {
         addXP(5);
         markLevelCompleted(lettersLevelIndex + 1);
       }
@@ -239,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderLettersLevel();
     }
   });
+
   lettersNext.addEventListener("click", () => {
     if (lettersLevelIndex < LETTER_LEVELS.length - 1) {
       lettersLevelIndex++;
@@ -246,57 +273,72 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* ------------------------------------------------------------------
+  /* ---------------------------------------------------
    * WORD BUILDER GAME
-   * ------------------------------------------------------------------ */
+   * --------------------------------------------------- */
   let wordLevelIndex = 0;
+
   const wordLevelLabel = document.getElementById("word-level");
   const wordTarget = document.getElementById("word-target");
   const wordSlots = document.getElementById("word-slots");
   const wordPool = document.getElementById("word-pool");
   const wordFeedback = document.getElementById("word-feedback");
+  const wordImg = document.getElementById("word-img");
+  const wordImgCaption = document.getElementById("word-img-caption");
   const checkWordBtn = document.getElementById("check-word");
   const wordPrev = document.getElementById("word-prev");
   const wordNext = document.getElementById("word-next");
+
+  function showWordPicture(word) {
+    const path = WORD_IMAGES[word] || "";
+    if (path) {
+      wordImg.src = path;
+      wordImg.style.display = "block";
+      const caption = `This is a ${word.toLowerCase()}.`;
+      wordImgCaption.textContent = caption;
+      wordImg.alt = caption;
+    } else {
+      wordImg.style.display = "none";
+      wordImgCaption.textContent = "";
+    }
+  }
 
   function renderWordLevel() {
     const word = WORD_LEVELS[wordLevelIndex];
     const levelNum = wordLevelIndex + 1;
     wordLevelLabel.textContent = levelNum;
+
     wordTarget.textContent = `Build the word: ${word}`;
     wordSlots.innerHTML = "";
     wordPool.innerHTML = "";
     wordFeedback.textContent = "";
 
-    // make slots
+    showWordPicture(word);
+
+    // Make slots
     for (let i = 0; i < word.length; i++) {
       const slot = document.createElement("div");
       slot.className = "slot";
-      slot.addEventListener("dragover", e => e.preventDefault());
-      slot.addEventListener("drop", e => {
-        e.preventDefault();
-        const letter = e.dataTransfer.getData("text/plain");
-        const token = document.querySelector(`[data-token="${letter}${tokenIndex}"]`) ||
-                      wordPool.querySelector(`[data-token-letter="${letter}"]`);
-      });
       wordSlots.appendChild(slot);
     }
 
-    // pool letters (include extra distractors)
+    // Pool letters
     const baseLetters = word.split("");
-    const extras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    const extras = alphabet
       .filter(c => !baseLetters.includes(c))
       .sort(() => Math.random() - 0.5)
       .slice(0, Math.max(0, 6 - baseLetters.length));
 
-    const poolLetters = [...baseLetters, ...extras].sort(() => Math.random() - 0.5);
+    const poolLetters = [...baseLetters, ...extras].sort(
+      () => Math.random() - 0.5
+    );
 
     poolLetters.forEach((ch, idx) => {
       const token = document.createElement("button");
       token.className = "token";
       token.textContent = ch;
-      token.dataset.letter = ch;
-      token.dataset.id = `w${wordLevelIndex}-${idx}`;
+      token.dataset.id = `w-${wordLevelIndex}-${idx}`;
       token.setAttribute("draggable","true");
       token.addEventListener("dragstart", e => {
         e.dataTransfer.setData("text/plain", token.dataset.id);
@@ -304,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wordPool.appendChild(token);
     });
 
-    // allow slots / pool drop
+    // Set up slots for drops
     wordSlots.querySelectorAll(".slot").forEach(slot => {
       slot.addEventListener("dragover", e => e.preventDefault());
       slot.addEventListener("drop", e => {
@@ -317,15 +359,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     });
-
-    wordPool.addEventListener("dragover", e => e.preventDefault());
-    wordPool.addEventListener("drop", e => {
-      e.preventDefault();
-      const id = e.dataTransfer.getData("text/plain");
-      const t = document.querySelector(`[data-id="${id}"]`);
-      if (t) wordPool.appendChild(t);
-    }, { once: true });
   }
+
+  // Allow dragging back to pool
+  wordPool.addEventListener("dragover", e => e.preventDefault());
+  wordPool.addEventListener("drop", e => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    const t = document.querySelector(`[data-id="${id}"]`);
+    if (t) wordPool.appendChild(t);
+  });
 
   checkWordBtn.addEventListener("click", () => {
     const word = WORD_LEVELS[wordLevelIndex];
@@ -334,6 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
     if (built === word) {
       wordFeedback.textContent = "✅ Great job!";
+      speak(word.split("").join(" ") + `. ${word}.`);
       addXP(8);
       markLevelCompleted(wordLevelIndex + 1);
     } else {
@@ -347,6 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderWordLevel();
     }
   });
+
   wordNext.addEventListener("click", () => {
     if (wordLevelIndex < WORD_LEVELS.length - 1) {
       wordLevelIndex++;
@@ -354,10 +399,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* ------------------------------------------------------------------
+  /* ---------------------------------------------------
    * SENTENCE BUILDER GAME
-   * ------------------------------------------------------------------ */
+   * --------------------------------------------------- */
   let sentLevelIndex = 0;
+
   const sentLevelLabel = document.getElementById("sent-level");
   const sentSlots = document.getElementById("sentence-slots");
   const sentPool = document.getElementById("sentence-pool");
@@ -387,7 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const token = document.createElement("button");
       token.className = "token";
       token.textContent = word;
-      token.dataset.id = `s${sentLevelIndex}-${idx}`;
+      token.dataset.id = `s-${sentLevelIndex}-${idx}`;
       token.setAttribute("draggable","true");
       token.addEventListener("dragstart", e => {
         e.dataTransfer.setData("text/plain", token.dataset.id);
@@ -401,18 +447,21 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         const id = e.dataTransfer.getData("text/plain");
         const t = document.querySelector(`[data-id="${id}"]`);
-        if (t) { slot.appendChild(t); ding(); }
+        if (t) {
+          slot.appendChild(t);
+          ding();
+        }
       });
     });
-
-    sentPool.addEventListener("dragover", e => e.preventDefault());
-    sentPool.addEventListener("drop", e => {
-      e.preventDefault();
-      const id = e.dataTransfer.getData("text/plain");
-      const t = document.querySelector(`[data-id="${id}"]`);
-      if (t) sentPool.appendChild(t);
-    }, { once: true });
   }
+
+  sentPool.addEventListener("dragover", e => e.preventDefault());
+  sentPool.addEventListener("drop", e => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    const t = document.querySelector(`[data-id="${id}"]`);
+    if (t) sentPool.appendChild(t);
+  });
 
   checkSentBtn.addEventListener("click", () => {
     const sentence = SENTENCE_LEVELS[sentLevelIndex];
@@ -430,18 +479,24 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   sentPrev.addEventListener("click", () => {
-    if (sentLevelIndex > 0) { sentLevelIndex--; renderSentenceLevel(); }
-  });
-  sentNext.addEventListener("click", () => {
-    if (sentLevelIndex < SENTENCE_LEVELS.length - 1) {
-      sentLevelIndex++; renderSentenceLevel();
+    if (sentLevelIndex > 0) {
+      sentLevelIndex--;
+      renderSentenceLevel();
     }
   });
 
-  /* ------------------------------------------------------------------
+  sentNext.addEventListener("click", () => {
+    if (sentLevelIndex < SENTENCE_LEVELS.length - 1) {
+      sentLevelIndex++;
+      renderSentenceLevel();
+    }
+  });
+
+  /* ---------------------------------------------------
    * RHYMING GAME
-   * ------------------------------------------------------------------ */
+   * --------------------------------------------------- */
   let rhymeLevelIndex = 0;
+
   const rhymeLevelLabel = document.getElementById("rhyme-level");
   const rhymeTarget = document.getElementById("rhyme-target");
   const rhymeChoices = document.getElementById("rhyme-choices");
@@ -458,7 +513,10 @@ document.addEventListener("DOMContentLoaded", () => {
     rhymeChoices.innerHTML = "";
     rhymeFeedback.textContent = "";
 
-    const options = [level.correct, ...level.others].sort(() => Math.random() - 0.5);
+    const options = [level.correct, ...level.others].sort(
+      () => Math.random() - 0.5
+    );
+
     options.forEach(word => {
       const btn = document.createElement("button");
       btn.className = "token";
@@ -466,7 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => {
         if (word === level.correct) {
           rhymeFeedback.textContent = "✅ Yes, that rhymes!";
-          speak(`${level.base} — ${level.correct}`);
+          speak(`${level.base} rhymes with ${level.correct}.`);
           addXP(6);
           markLevelCompleted(rhymeLevelIndex + 1);
         } else {
@@ -478,17 +536,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   rhymePrev.addEventListener("click", () => {
-    if (rhymeLevelIndex > 0) { rhymeLevelIndex--; renderRhymeLevel(); }
-  });
-  rhymeNext.addEventListener("click", () => {
-    if (rhymeLevelIndex < RHYME_LEVELS.length - 1) {
-      rhymeLevelIndex++; renderRhymeLevel();
+    if (rhymeLevelIndex > 0) {
+      rhymeLevelIndex--;
+      renderRhymeLevel();
     }
   });
 
-  /* ------------------------------------------------------------------
-   * LEARNING PATH MAP
-   * ------------------------------------------------------------------ */
+  rhymeNext.addEventListener("click", () => {
+    if (rhymeLevelIndex < RHYME_LEVELS.length - 1) {
+      rhymeLevelIndex++;
+      renderRhymeLevel();
+    }
+  });
+
+  /* ---------------------------------------------------
+   * LEARNING PATH
+   * --------------------------------------------------- */
   const pathMap = document.getElementById("path-map");
   const pathDetail = document.getElementById("path-detail");
   const pathStatus = document.getElementById("path-status");
@@ -505,15 +568,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function renderPathMap() { renderPath(pathMap); }
+  function renderPathMap() {
+    renderPath(pathMap);
+  }
+
   function renderPathDetail() {
     renderPath(pathDetail);
     pathStatus.textContent = `Highest step reached: ${maxLevelReached} / 10`;
   }
 
-  /* ------------------------------------------------------------------
+  /* ---------------------------------------------------
    * ACHIEVEMENTS
-   * ------------------------------------------------------------------ */
+   * --------------------------------------------------- */
   const achList = document.getElementById("ach-list");
 
   const ACH_CONFIG = [
@@ -550,9 +616,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ------------------------------------------------------------------
-   * INITIAL RENDERS
-   * ------------------------------------------------------------------ */
+  /* ---------------------------------------------------
+   * INITIAL RENDER
+   * --------------------------------------------------- */
   renderLettersLevel();
   renderWordLevel();
   renderSentenceLevel();
@@ -560,4 +626,5 @@ document.addEventListener("DOMContentLoaded", () => {
   renderPathMap();
   renderPathDetail();
   renderAchievements();
+  updateXPUI();
 });
