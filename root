@@ -1,5 +1,4 @@
-  /(root)
-   index.html  
-   style.css  
-   app.js  
-   README.md
+ index.html
+style.css
+app.js
+sounds/ (optional letter sounds)
