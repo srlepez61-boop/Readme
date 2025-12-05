@@ -445,3 +445,7 @@ body {
     width: 100%;
   }
 }
+.big-emoji {
+  font-size: 90px;
+  line-height: 1.1;
+}
