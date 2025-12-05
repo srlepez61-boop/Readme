@@ -2,18 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Read & Play - Mini ABC</title>
+  <title>Read & Play</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>Read & Play</h1>
 
-  <!-- XP bar -->
+  <!-- XP BAR -->
   <div id="xp-container">
     <div id="xp-bar"></div>
     <span id="xp-text">XP: 0</span>
   </div>
+
+  <!-- LETTER SOUNDS -->
+  <section id="letters">
+    <h2>Tap a letter to hear its sound</h2>
+    <div class="letter-grid"></div>
+  </section>
 
   <!-- WORD BUILDER -->
   <section id="word-builder">
@@ -36,24 +42,19 @@
 
   <!-- RHYMING GAME -->
   <section id="rhyming-game">
-    <h2>Find the rhyming word</h2>
-    <div id="rhyming-target"></div>
+    <h2>Rhyming game</h2>
+    <p id="rhyming-target"></p>
     <div id="rhyming-choices"></div>
     <p id="rhyme-msg"></p>
   </section>
 
   <!-- REWARD SCREEN -->
-  <section id="reward-screen" class="hidden">
-    <div id="confetti"></div>
-    <h2>🏆 Congratulations! 🎉</h2>
+  <div id="reward-screen" class="hidden">
+    <h2>🏆 Congratulations!</h2>
+    <p>You completed all levels!</p>
+    <canvas id="confetti"></canvas>
     <button id="restart-btn">Restart</button>
-  </section>
-
-  <!-- LETTER GRID -->
-  <section id="letters">
-    <h2>Tap a letter to hear its sound</h2>
-    <div class="letter-grid"></div>
-  </section>
+  </div>
 
   <script src="app.js"></script>
 </body>
