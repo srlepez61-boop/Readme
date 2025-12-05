@@ -1,7 +1,16 @@
-// Clean, tested app.js — Word Builder + Sentence + Rhymes + XP + Path + Confetti
+// app.js — Full rebuild (compact & commented)
+// Saves progress to localStorage: 'rp_state'
 
-/* ========= DATA: 5 levels x 10 words each ========= */
-const levels = [
+/* ------------------- Utilities ------------------- */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+function persist(state){ localStorage.setItem('rp_state', JSON.stringify(state)); }
+function loadState(){ try{ return JSON.parse(localStorage.getItem('rp_state')) || {}; }catch(e){return {};} }
+function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function shuffle(arr){ return arr.slice().sort(()=>Math.random()-0.5); }
+
+/* ------------------- Data (levels, sentences, rhymes) ------------------- */
+const LEVELS = [
   [ {word:'cat',pic:'🐱'},{word:'dog',pic:'🐶'},{word:'sun',pic:'☀️'},{word:'hat',pic:'🎩'},{word:'bat',pic:'🦇'},{word:'fox',pic:'🦊'},{word:'ant',pic:'🐜'},{word:'bee',pic:'🐝'},{word:'cow',pic:'🐮'},{word:'pig',pic:'🐷'} ],
   [ {word:'fish',pic:'🐟'},{word:'book',pic:'📖'},{word:'star',pic:'⭐'},{word:'tree',pic:'🌳'},{word:'milk',pic:'🥛'},{word:'cake',pic:'🍰'},{word:'leaf',pic:'🍃'},{word:'moon',pic:'🌙'},{word:'bear',pic:'🐻'},{word:'lion',pic:'🦁'} ],
   [ {word:'rain',pic:'🌧️'},{word:'ship',pic:'🚢'},{word:'ring',pic:'💍'},{word:'shoe',pic:'👟'},{word:'ball',pic:'⚽'},{word:'bell',pic:'🔔'},{word:'bike',pic:'🚲'},{word:'clock',pic:'🕰️'},{word:'chair',pic:'🪑'},{word:'table',pic:'🛋️'} ],
@@ -9,421 +18,443 @@ const levels = [
   [ {word:'garden',pic:'🌷'},{word:'river',pic:'🏞️'},{word:'island',pic:'🏝️'},{word:'mount',pic:'⛰️'},{word:'castle',pic:'🏰'},{word:'robot',pic:'🤖'},{word:'banana',pic:'🍌'},{word:'orange',pic:'🍊'},{word:'teacher',pic:'👩‍🏫'},{word:'doctor',pic:'👨‍⚕️'} ]
 ];
 
-const sentencesBank = [
-  ['I','see','a','cat'],
-  ['The','dog','is','big'],
-  ['I','like','the','sun'],
-  ['The','fish','swims','fast'],
-  ['A','ball','is','red']
-];
+const SENTENCES = [['I','see','a','cat'],['The','dog','is','big'],['I','like','the','sun'],['The','fish','swims','fast'],['A','ball','is','red']];
+const RHYMES = [{target:'cat',options:['bat','dog','sun','hat'],answer:'bat'},{target:'dog',options:['log','cat','sun','fish'],answer:'log'},{target:'sun',options:['fun','run','cat','dog'],answer:'fun'},{target:'ball',options:['fall','cat','dog','fish'],answer:'fall'}];
 
-const rhymesBank = [
-  {target:'cat', options:['bat','dog','sun','hat'], answer:'bat'},
-  {target:'dog', options:['log','cat','fish','sun'], answer:'log'},
-  {target:'sun', options:['fun','run','cat','dog'], answer:'fun'},
-  {target:'ball', options:['fall','cat','dog','fish'], answer:'fall'}
-];
+/* ------------------- App State & Persistence ------------------- */
+const saved = loadState();
+const state = {
+  levelIndex: saved.levelIndex || 0,
+  xp: saved.xp || 0,
+  completedWords: saved.completedWords || {}, // { '0:cat':true }
+  achievements: saved.achievements || {},
+  avatar: saved.avatar || {color:'#ffb300',hat:'none'}
+};
 
-/* ========= STATE & DOM ========= */
-let currentLevel = 0;
-let currentWord = null;
-let xp = 0;
-let currentSentence = null;
-let currentRhyme = null;
+/* ------------------- DOM refs ------------------- */
+const screens = $$('main.screen').concat($$('section.screen'));
+const menuScreen = $('#menu');
+const letterScreen = $('#letters');
+const wbScreen = $('#word-builder');
+const sbScreen = $('#sentence-builder');
+const rhScreen = $('#rhyming');
+const pathScreen = $('#path');
+const achScreen = $('#achievements');
 
-const letterGrid = document.querySelector('.letter-grid');
-const slotsEl = document.getElementById('slots');
-const poolEl = document.getElementById('letters-pool');
-const checkBtn = document.getElementById('check-btn');
-const shuffleBtn = document.getElementById('shuffle-btn');
-const hintBtn = document.getElementById('hint-btn');
-const msg = document.getElementById('msg');
-const pic = document.getElementById('pic');
+const letterGrid = $('.letter-grid');
+const wbPic = $('#wb-pic');
+const wbSlots = $('#wb-slots');
+const wbPool = $('#wb-pool');
+const wbMsg = $('#wb-msg');
+const sbSlots = $('#sb-slots');
+const sbPool = $('#sb-pool');
+const sbMsg = $('#sb-msg');
+const rgTarget = $('#rg-target');
+const rgChoices = $('#rg-choices');
+const rgMsg = $('#rg-msg');
 
-const xpBar = document.getElementById('xp-bar');
-const xpText = document.getElementById('xp-text');
-const pathEl = document.getElementById('path');
+const xpBar = $('#xp-bar'), xpText = $('#xp-text');
+const pathNodes = $('#path-nodes'), pathStatus = $('#path-status');
+const avatarPreview = $('#avatar-preview');
+const rewardModal = $('#reward'), confettiCanvas = $('#confetti');
 
-const sentenceSlots = document.getElementById('sentence-slots');
-const sentencePool = document.getElementById('sentence-pool');
-const checkSentenceBtn = document.getElementById('check-sentence-btn');
-const sentenceMsg = document.getElementById('sentence-msg');
+/* ------------------- Audio helpers ------------------- */
+const audioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
+function beep(freq=880, time=0.08, vol=0.15){
+  if(!audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.frequency.value = freq;
+  g.gain.value = vol;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime + time);
+}
+function speak(text){ try{ const u = new SpeechSynthesisUtterance(text); u.lang='en-US'; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
 
-const rhymeTarget = document.getElementById('rhyming-target');
-const rhymeChoices = document.getElementById('rhyming-choices');
-const rhymeMsg = document.getElementById('rhyme-msg');
+/* ------------------- UI helpers ------------------- */
+function showScreen(el){
+  $$('main.screen, section.screen').forEach(s=>s.classList.add('hidden'));
+  el.classList.remove('hidden');
+}
+function save(){ persist(state); }
 
-const rewardScreen = document.getElementById('reward-screen');
-const restartBtn = document.getElementById('restart-btn');
-const confettiCanvas = document.getElementById('confetti');
-
-/* ========= UTIL FUNCTIONS ========= */
-function shuffleArray(arr){ return arr.slice().sort(()=>Math.random()-0.5); }
-
-function speak(text){
-  try{
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US';
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  }catch(e){}
+/* ------------------- Menu & Profile ------------------- */
+function openProfile(){
+  $('#profile-modal').classList.remove('hidden');
+  $('#avatar-color').value = state.avatar.color;
+  $('#avatar-hat').value = state.avatar.hat;
+}
+function closeProfile(){ $('#profile-modal').classList.add('hidden'); }
+function saveProfile(){
+  state.avatar.color = $('#avatar-color').value;
+  state.avatar.hat = $('#avatar-hat').value;
+  renderAvatar();
+  save();
+  closeProfile();
 }
 
-/* XP and Level / Learning Path */
+/* ------------------- Avatar preview ------------------- */
+function renderAvatar(){
+  avatarPreview.innerHTML = '';
+  const a = document.createElement('div');
+  a.className = 'avatar';
+  a.style.background = state.avatar.color;
+  a.textContent = '🙂';
+  avatarPreview.appendChild(a);
+}
+
+/* ------------------- XP & Path ------------------- */
 function updateXP(amount){
-  xp = Math.max(0, Math.min(100, xp + amount));
-  xpBar.style.width = xp + '%';
-  xpText.textContent = `XP: ${xp}`;
-  if(xp >= 100){
-    xp = 0;
-    xpBar.style.width = '0%';
-    currentLevel++;
-    if(currentLevel >= levels.length){
-      // completed all levels
-      showReward();
-      return;
+  state.xp = Math.max(0, Math.min(100, state.xp + amount));
+  xpBar.style.width = state.xp + '%';
+  xpText.textContent = `XP: ${state.xp}`;
+  if(state.xp >= 100){
+    state.xp = 0;
+    state.levelIndex++;
+    if(state.levelIndex >= LEVELS.length){
+      // finished entire path
+      showReward('You finished the learning path! Great job!');
+      state.levelIndex = LEVELS.length - 1;
+    } else {
+      speak('Level up! Well done!');
+      blinkLevel(state.levelIndex);
     }
-    drawLearningPath();
-    pickWord();
   }
+  save();
+  renderPath();
 }
 
-function drawLearningPath(){
-  pathEl.innerHTML = '';
-  for(let i=0;i<levels.length;i++){
+function renderPath(){
+  pathNodes.innerHTML = '';
+  for(let i=0;i<LEVELS.length;i++){
     const node = document.createElement('div');
-    node.className = 'level-node' + (i < currentLevel ? ' completed' : '');
+    node.className = 'level-node' + (i < state.levelIndex ? ' completed' : '');
     node.textContent = i+1;
-    node.addEventListener('click', ()=> {
-      currentLevel = i;
-      xp = 0;
-      xpBar.style.width = '0%';
-      drawLearningPath();
-      pickWord();
-    });
-    pathEl.appendChild(node);
+    node.addEventListener('click', ()=> { state.levelIndex = i; state.xp = 0; save(); renderPath(); pickWord(); showScreen(pathScreen);});
+    pathNodes.appendChild(node);
   }
+  pathStatus.textContent = `Level ${state.levelIndex+1} of ${LEVELS.length}`;
 }
 
-/* ========= LETTER GRID (phonics) ========= */
-(function initLetterGrid(){
-  const letters = 'abcdefghijklmnopqrstuvwxyz';
-  letterGrid.innerHTML = '';
-  [...letters].forEach(l => {
-    const btn = document.createElement('div');
-    btn.className = 'letter';
-    btn.textContent = l.toUpperCase();
-    btn.addEventListener('click', ()=> {
-      speak(`The letter ${l} says ${l}`);
-      // attempt to place if letters pool has the letter
-      placeLetterFromPool(l);
-    });
-    letterGrid.appendChild(btn);
-  });
-})();
-
-/* ========= WORD BUILDER ========= */
-function setEmoji(emoji){
-  pic.alt = emoji;
-  // prefer using emoji image via twemoji to ensure consistent look
-  try{
-    const codepoints = Array.from(emoji).map(c => c.codePointAt(0).toString(16));
-    pic.src = `https://twemoji.maxcdn.com/v/latest/72x72/${codepoints.join('-')}.png`;
-  }catch(e){
-    pic.src = '';
-  }
+function blinkLevel(i){
+  const nodes = $$('.level-node');
+  if(nodes[i]) nodes[i].animate([{transform:'scale(1)'},{transform:'scale(1.2)'},{transform:'scale(1)'}],{duration:700});
 }
+
+/* ------------------- Word Builder logic ------------------- */
+let currentWord = null;
 
 function pickWord(){
-  const words = levels[currentLevel];
-  if(!words || words.length === 0){
-    showReward();
-    return;
-  }
-  currentWord = words[Math.floor(Math.random()*words.length)];
-  setEmoji(currentWord.pic);
-  slotsEl.innerHTML = '';
-  poolEl.innerHTML = '';
-  msg.textContent = '';
+  const words = LEVELS[state.levelIndex];
+  if(!words || words.length === 0) return;
+  // choose a word not completed yet if possible
+  const remaining = words.filter(w => !state.completedWords[`${state.levelIndex}:${w.word}`]);
+  const pool = remaining.length ? remaining : words;
+  currentWord = pool[Math.floor(Math.random()*pool.length)];
+  setupWordUI();
+}
 
-  // create empty slots for each letter
-  currentWord.word.split('').forEach((_ch, idx) => {
-    const slot = document.createElement('div');
-    slot.className = 'slot';
-    slot.dataset.pos = idx;
-    slot.addEventListener('dragover', e => e.preventDefault());
-    slot.addEventListener('drop', handleDropToSlot);
-    slot.addEventListener('click', () => {
-      // remove letter from slot and re-enable chip
-      if(slot.textContent){
-        const letter = slot.textContent;
-        slot.textContent = '';
-        slot.classList.remove('filled');
-        const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'true');
+function setupWordUI(){
+  wbPic.src = '';
+  wbSlots.innerHTML = '';
+  wbPool.innerHTML = '';
+  wbMsg.textContent = 'Drag or tap letters to build the word';
+  setPic(currentWord.pic, wbPic);
+
+  // slots
+  currentWord.word.split('').forEach((ch, idx) => {
+    const s = document.createElement('div');
+    s.className = 'slot';
+    s.dataset.pos = idx;
+    s.addEventListener('dragover', e => e.preventDefault());
+    s.addEventListener('drop', onDropToSlot);
+    s.addEventListener('click', ()=> {
+      if(s.textContent){
+        // re-enable matching chip
+        const letter = s.textContent.toLowerCase();
+        const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === letter && c.dataset.used === 'true');
         if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
+        s.textContent = '';
+        s.classList.remove('filled');
       }
     });
-    slotsEl.appendChild(slot);
+    wbSlots.appendChild(s);
   });
 
-  // create shuffled chips
-  shuffleArray(currentWord.word.split('')).forEach(ch => {
+  // shuffle chips
+  shuffle(currentWord.word.split('')).forEach(ch => {
     const chip = document.createElement('button');
     chip.className = 'letter-tile';
     chip.textContent = ch.toUpperCase();
     chip.draggable = true;
     chip.dataset.used = 'false';
-    chip.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', ch);
-      chip.classList.add('dragging');
-    });
-    chip.addEventListener('dragend', ()=>chip.classList.remove('dragging'));
-    chip.addEventListener('click', ()=> {
-      if(chip.dataset.used === 'true') return;
-      placeSpecificChip(chip);
-      speak(chip.textContent);
-    });
-    poolEl.appendChild(chip);
+    chip.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', ch); chip.classList.add('dragging');});
+    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+    chip.addEventListener('click', ()=>{ if(chip.dataset.used === 'true') return; placeChipToFirstEmpty(chip); speak(chip.textContent); });
+    wbPool.appendChild(chip);
   });
 }
 
-function placeLetterFromPool(letter){
-  const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'false');
-  if(!chip) return;
-  placeSpecificChip(chip);
-}
-
-function placeSpecificChip(chip){
-  const emptySlot = Array.from(slotsEl.children).find(s => !s.textContent);
-  if(!emptySlot) return;
-  emptySlot.textContent = chip.textContent;
-  emptySlot.classList.add('filled');
-  chip.dataset.used = 'true';
-  chip.disabled = true;
-}
-
-function handleDropToSlot(e){
+function onDropToSlot(e){
   e.preventDefault();
   const letter = e.dataTransfer.getData('text/plain');
   if(!letter) return;
-  // find chip with that letter and not used
-  const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'false');
+  const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === letter && c.dataset.used === 'false');
   if(!chip) return;
-  // if target slot is filled, do nothing
-  if(e.currentTarget.textContent) return;
-  e.currentTarget.textContent = chip.textContent;
-  e.currentTarget.classList.add('filled');
+  const target = e.currentTarget;
+  if(target.textContent) return; // already filled
+  target.textContent = chip.textContent;
+  target.classList.add('filled');
   chip.dataset.used = 'true';
   chip.disabled = true;
 }
 
-/* Check, shuffle, hint */
-checkBtn.addEventListener('click', ()=>{
+function placeChipToFirstEmpty(chip){
+  const empty = Array.from(wbSlots.children).find(s => !s.textContent);
+  if(!empty) return;
+  empty.textContent = chip.textContent;
+  empty.classList.add('filled');
+  chip.dataset.used = 'true';
+  chip.disabled = true;
+}
+
+function checkWord(){
   if(!currentWord) return;
-  const built = Array.from(slotsEl.children).map(s => (s.textContent||'')).join('').toLowerCase();
+  const built = Array.from(wbSlots.children).map(s => s.textContent || '').join('').toLowerCase();
   if(built === currentWord.word){
-    msg.textContent = '🎉 Correct!';
+    wbMsg.textContent = 'Correct! +20 XP';
+    beep(880,0.08); speak(currentWord.word);
     updateXP(20);
-    // remove this word from the pool so it won't repeat within level
-    levels[currentLevel] = levels[currentLevel].filter(w => w.word !== currentWord.word);
-    setTimeout(()=>{
-      if(levels[currentLevel].length === 0){
-        // advance level
-        currentLevel++;
-        if(currentLevel >= levels.length){
-          showReward();
-          return;
-        }
-        drawLearningPath();
-      }
-      pickWord();
-    }, 700);
+    state.completedWords[`${state.levelIndex}:${currentWord.word}`] = true;
+    save();
+    // quick celebration
+    $$('#wb-pool .letter-tile').forEach(c => c.disabled = true);
+    setTimeout(()=> pickWord(), 900);
   } else {
-    msg.textContent = 'Try again!';
+    wbMsg.textContent = 'Try again!';
+    beep(220,0.06);
   }
-});
+}
 
-shuffleBtn.addEventListener('click', ()=>{
+function hintWord(){
   if(!currentWord) return;
-  const letters = Array.from(poolEl.children).map(c => c.textContent);
-  poolEl.innerHTML = '';
-  shuffleArray(letters).forEach(l => {
-    const chip = document.createElement('button');
-    chip.className = 'letter-tile';
-    chip.textContent = l;
-    chip.draggable = true;
-    chip.dataset.used = 'false';
-    chip.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', l); chip.classList.add('dragging');});
-    chip.addEventListener('dragend', ()=>chip.classList.remove('dragging'));
-    chip.addEventListener('click', ()=>{ if(chip.dataset.used === 'true') return; placeSpecificChip(chip); speak(chip.textContent); });
-    poolEl.appendChild(chip);
-  });
-});
+  const empties = Array.from(wbSlots.children).filter(s => !s.textContent);
+  if(!empties.length) return;
+  const slot = empties[0];
+  const idx = Number(slot.dataset.pos);
+  const letter = currentWord.word[idx];
+  const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === letter && c.dataset.used === 'false');
+  if(chip) placeChipToFirstEmpty(chip);
+}
 
-hintBtn.addEventListener('click', ()=>{
-  if(!currentWord) return;
-  // reveal first empty slot with the correct letter
-  const emptySlots = Array.from(slotsEl.children).filter(s => !s.textContent);
-  if(emptySlots.length === 0) return;
-  const slot = emptySlots[0];
-  const pos = Number(slot.dataset.pos);
-  const letter = currentWord.word[pos];
-  placeLetterFromPool(letter);
-});
-
-/* ========= SENTENCE BUILDER ========= */
+/* ------------------- Sentence Builder ------------------- */
+let sentenceActive = null;
 function pickSentence(){
-  currentSentence = sentencesBank[Math.floor(Math.random()*sentencesBank.length)];
-  sentenceSlots.innerHTML = '';
-  sentencePool.innerHTML = '';
-  sentenceMsg.textContent = '';
-  // create slots equal to sentence length
-  currentSentence.forEach(() => {
-    const slot = document.createElement('div');
-    slot.className = 'sentence-slot';
+  currentSentence = SENTENCES[Math.floor(Math.random()*SENTENCES.length)];
+  sbSlots.innerHTML = ''; sbPool.innerHTML = ''; sbMsg.textContent = '';
+  currentSentence.forEach(()=> {
+    const slot = document.createElement('div'); slot.className = 'sentence-slot';
     slot.addEventListener('dragover', e => e.preventDefault());
     slot.addEventListener('drop', e => {
-      e.preventDefault();
       const word = e.dataTransfer.getData('text/plain');
       e.currentTarget.textContent = word;
-      // disable matching chip
-      const chip = Array.from(sentencePool.children).find(c => c.textContent === word && c.dataset.used !== 'true');
+      const chip = Array.from(sbPool.children).find(c => c.textContent === word && c.dataset.used !== 'true');
       if(chip){ chip.dataset.used = 'true'; chip.disabled = true; }
     });
-    slot.addEventListener('click', () => { if(slot.textContent){ const word = slot.textContent; slot.textContent = ''; const chip = Array.from(sentencePool.children).find(c => c.textContent === word && c.dataset.used === 'true'); if(chip){ chip.dataset.used = 'false'; chip.disabled = false; } }});
-    sentenceSlots.appendChild(slot);
+    slot.addEventListener('click', ()=> {
+      if(slot.textContent){
+        const w = slot.textContent;
+        slot.textContent = '';
+        const chip = Array.from(sbPool.children).find(c => c.textContent === w && c.dataset.used === 'true');
+        if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
+      }
+    });
+    sbSlots.appendChild(slot);
   });
-  // shuffled chips
-  shuffleArray(currentSentence).forEach(w => {
-    const chip = document.createElement('button');
-    chip.className = 'word-tile';
-    chip.textContent = w;
-    chip.draggable = true;
-    chip.dataset.used = 'false';
+  shuffle(currentSentence).forEach(w => {
+    const chip = document.createElement('button'); chip.className = 'word-tile'; chip.textContent = w; chip.draggable = true; chip.dataset.used = 'false';
     chip.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', w));
     chip.addEventListener('click', ()=> {
-      const empty = Array.from(sentenceSlots.children).find(s => !s.textContent);
+      const empty = Array.from(sbSlots.children).find(s => !s.textContent);
       if(!empty) return;
-      empty.textContent = w;
-      chip.dataset.used = 'true';
-      chip.disabled = true;
+      empty.textContent = w; chip.dataset.used = 'true'; chip.disabled = true;
     });
-    sentencePool.appendChild(chip);
+    sbPool.appendChild(chip);
   });
 }
 
-checkSentenceBtn.addEventListener('click', ()=>{
-  const built = Array.from(sentenceSlots.children).map(s => s.textContent || '').join(' ');
+function checkSentence(){
+  const built = Array.from(sbSlots.children).map(s => s.textContent || '').join(' ');
   if(built === currentSentence.join(' ')){
-    sentenceMsg.textContent = '🎉 Correct!';
+    sbMsg.textContent = 'Great! +15 XP';
+    beep(880,0.08); speak(built);
     updateXP(15);
     pickSentence();
   } else {
-    sentenceMsg.textContent = 'Try again!';
+    sbMsg.textContent = 'Try again!';
+    beep(220,0.06);
   }
-});
+}
 
-/* ========= RHYMING GAME ========= */
+/* ------------------- Rhyming Game ------------------- */
 function pickRhyme(){
-  currentRhyme = rhymesBank[Math.floor(Math.random()*rhymesBank.length)];
-  rhymeTarget.textContent = `Find the word that rhymes with: "${currentRhyme.target}"`;
-  rhymeChoices.innerHTML = '';
-  rhymeMsg.textContent = '';
-  shuffleArray(currentRhyme.options).forEach(opt => {
-    const b = document.createElement('button');
-    b.className = 'rhyme-choice';
-    b.textContent = opt;
-    b.addEventListener('click', ()=>{
+  currentRhyme = RHYMES[Math.floor(Math.random()*RHYMES.length)];
+  rgTarget.textContent = `Which word rhymes with "${currentRhyme.target}"?`;
+  rgChoices.innerHTML = ''; rgMsg.textContent = '';
+  shuffle(currentRhyme.options).forEach(opt => {
+    const b = document.createElement('button'); b.className = 'rhyme-choice'; b.textContent = opt;
+    b.addEventListener('click', ()=> {
       if(opt === currentRhyme.answer){
-        rhymeMsg.textContent = '🎉 Correct!';
-        updateXP(15);
+        rgMsg.textContent = 'Nice! +15 XP';
+        beep(880,0.08); updateXP(15);
         pickRhyme();
       } else {
-        rhymeMsg.textContent = 'Try again!';
+        rgMsg.textContent = 'Try again!';
+        beep(220,0.06);
       }
     });
-    rhymeChoices.appendChild(b);
+    rgChoices.appendChild(b);
   });
 }
 
-/* ========= REWARD + CONFETTI ========= */
-function showReward(){
-  rewardScreen.classList.remove('hidden');
-  rewardScreen.setAttribute('aria-hidden','false');
-  launchConfetti();
+/* ------------------- Reward modal & confetti ------------------- */
+function showReward(text='You completed the learning path!'){
+  $('#reward-text').textContent = text;
+  rewardModal.classList.remove('hidden'); rewardModal.querySelector('canvas#confetti').width = window.innerWidth; rewardModal.querySelector('canvas#confetti').height = window.innerHeight;
+  runConfetti(rewardModal.querySelector('canvas#confetti'));
 }
 
-restartBtn.addEventListener('click', ()=>{
-  rewardScreen.classList.add('hidden');
-  rewardScreen.setAttribute('aria-hidden','true');
-  currentLevel = 0;
-  xp = 0;
-  xpBar.style.width = '0%';
-  drawLearningPath();
-  pickWord();
-  pickSentence();
-  pickRhyme();
-});
-
-/* Simple confetti using canvas */
-function launchConfetti(){
-  const c = confettiCanvas;
-  if(!c) return;
-  const ctx = c.getContext('2d');
-  c.width = window.innerWidth;
-  c.height = window.innerHeight;
+function runConfetti(canvas){
+  const ctx = canvas.getContext('2d'); const w = canvas.width, h = canvas.height;
   const pieces = [];
-  for(let i=0;i<160;i++){
-    pieces.push({
-      x: Math.random()*c.width,
-      y: Math.random()*-c.height,
-      r: Math.random()*6+2,
-      dx: (Math.random()-0.5)*2,
-      dy: Math.random()*3 + 2,
-      color: `hsl(${Math.random()*360},100%,50%)`
-    });
-  }
+  for(let i=0;i<200;i++) pieces.push({x:Math.random()*w, y:Math.random()*h, r:Math.random()*5+2, dx:(Math.random()-0.5)*2, dy:Math.random()*3+1, color:`hsl(${Math.random()*360},100%,60%)`});
   let raf;
   function frame(){
-    ctx.clearRect(0,0,c.width,c.height);
-    pieces.forEach(p => {
-      p.x += p.dx;
-      p.y += p.dy;
-      if(p.y > c.height) { p.y = -10; p.x = Math.random()*c.width; }
-      ctx.beginPath();
-      ctx.fillStyle = p.color;
-      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fill();
-    });
+    ctx.clearRect(0,0,w,h);
+    pieces.forEach(p => { p.x += p.dx; p.y += p.dy; if(p.y>h) p.y = -10; ctx.beginPath(); ctx.fillStyle = p.color; ctx.fillRect(p.x,p.y,p.r,p.r*1.8); });
     raf = requestAnimationFrame(frame);
   }
   frame();
-  // stop after 6s
-  setTimeout(()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,c.width,c.height); }, 6000);
+  setTimeout(()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,w,h); }, 5000);
 }
 
-/* ========= INIT ========= */
-drawLearningPath();
-pickWord();
-pickSentence();
-pickRhyme();
-
-// Optional: keyboard support (backspace to remove last filled slot; letters to place)
+/* ------------------- small UX & keyboard ------------------- */
 document.addEventListener('keydown', e => {
-  if(!currentWord) return;
-  if(e.key === 'Backspace'){
-    e.preventDefault();
-    const filled = Array.from(slotsEl.children).filter(s => s.textContent);
-    if(!filled.length) return;
-    const last = filled[filled.length-1];
-    const letter = last.textContent;
-    last.textContent = '';
-    last.classList.remove('filled');
-    const chip = Array.from(poolEl.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'true');
-    if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
-    return;
+  if(e.key === 'Escape') {
+    // close profile or reward
+    if(!$('#profile-modal').classList.contains('hidden')) closeProfile();
+    if(!$('#reward').classList.contains('hidden')) { $('#reward').classList.add('hidden'); }
   }
-  if(/^[a-zA-Z]$/.test(e.key)){
-    placeLetterFromPool(e.key.toLowerCase());
+  if(/^([a-zA-Z])$/.test(e.key)){
+    // try to place letter in word builder
+    const c = e.key.toLowerCase();
+    if(!wbPool.children.length) return;
+    const chip = Array.from(wbPool.children).find(ch => ch.textContent.toLowerCase() === c && ch.dataset.used === 'false');
+    if(chip) placeChipToFirstEmpty(chip);
+  }
+  if(e.key === 'Backspace'){
+    // remove last filled slot in builder
+    const filled = Array.from(wbSlots.children).filter(s => s.textContent);
+    if(filled.length){
+      const last = filled[filled.length-1]; const letter = last.textContent; last.textContent = ''; last.classList.remove('filled');
+      const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'true');
+      if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
+    }
   }
 });
+
+/* ------------------- Initial render & event wiring ------------------- */
+function setPic(emoji, imgEl){
+  imgEl.alt = emoji;
+  try{
+    const cps = Array.from(emoji).map(c => c.codePointAt(0).toString(16));
+    imgEl.src = `https://twemoji.maxcdn.com/v/latest/72x72/${cps.join('-')}.png`;
+  }catch(e){ imgEl.src = ''; }
+}
+
+function wireEvents(){
+  // menu nav
+  $$('.menu-btn').forEach(b => b.addEventListener('click', ()=> {
+    const target = b.dataset.screen;
+    showScreen($('#' + target));
+    if(target === 'letters'){ renderLetters(); }
+    if(target === 'word-builder'){ pickWord(); }
+    if(target === 'sentence-builder'){ pickSentence(); }
+    if(target === 'rhyming'){ pickRhyme(); }
+    if(target === 'path') { renderPath(); }
+    if(target === 'achievements'){ renderAchievements(); }
+  }));
+  $$('.back-btn').forEach(b => b.addEventListener('click', ()=> showScreen(menuScreen) ));
+  $('#open-profile').addEventListener('click', openProfile);
+  $('#close-profile').addEventListener('click', closeProfile);
+  $('#save-profile').addEventListener('click', saveProfile);
+  $('#save-profile').addEventListener('click', ()=> { beep(1000,0.06); });
+
+  // word builder controls
+  $('#wb-check').addEventListener('click', checkWord);
+  $('#wb-hint').addEventListener('click', hintWord);
+  $('#wb-shuffle').addEventListener('click', ()=> {
+    const letters = Array.from(wbPool.children).map(c => c.textContent);
+    wbPool.innerHTML = '';
+    shuffle(letters).forEach(l => {
+      const chip = document.createElement('button'); chip.className = 'letter-tile'; chip.textContent = l; chip.draggable = true; chip.dataset.used = 'false';
+      chip.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', l));
+      chip.addEventListener('click', ()=> { if(chip.dataset.used==='true') return; placeChipToFirstEmpty(chip); speak(chip.textContent); });
+      wbPool.appendChild(chip);
+    });
+  });
+
+  // sentence & rhyme controls
+  $('#sb-check').addEventListener('click', checkSentence);
+  $('#sb-new').addEventListener('click', pickSentence);
+
+  // reward modal
+  $('#reward-ok').addEventListener('click', ()=> { $('#reward').classList.add('hidden'); });
+
+  // profile modal save/close
+  $('#save-profile').addEventListener('click', ()=> { renderAvatar(); });
+  $('#restart-btn')?.addEventListener('click', ()=> {
+    // restart progress
+    state.levelIndex = 0; state.xp = 0; state.completedWords = {}; state.achievements = {}; save();
+    renderPath(); pickWord(); pickSentence(); pickRhyme(); $('#reward').classList.add('hidden');
+  });
+}
+
+function renderLetters(){
+  letterGrid.innerHTML = '';
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  [...letters].forEach(l => {
+    const d = document.createElement('div'); d.className = 'letter'; d.textContent = l.toUpperCase();
+    d.addEventListener('click', ()=> { speak(`The letter ${l}`); const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === l && c.dataset.used === 'false'); if(chip) placeChipToFirstEmpty(chip); });
+    letterGrid.appendChild(d);
+  });
+}
+
+function renderAchievements(){
+  const box = $('#ach-list'); box.innerHTML = '';
+  const all = [
+    {id:'first_word',label:'First Word',desc:'Complete your first word',done: !!state.achievements.first_word},
+    {id:'ten_xp',label:'10 XP',desc:'Gain 10 XP',done: state.xp>=10 || !!state.achievements.ten_xp},
+    {id:'complete_level',label:'Complete a Level',desc:'Finish all 10 words in a level',done: !!state.achievements.complete_level}
+  ];
+  all.forEach(a => {
+    const c = document.createElement('div'); c.className = 'achie'; c.innerHTML = `<div>${a.label}</div><small>${a.desc}</small><div>${a.done ? '✅' : '🔒'}</div>`;
+    box.appendChild(c);
+  });
+}
+
+/* ------------------- Start ------------------- */
+(function init(){
+  renderAvatar();
+  renderPath();
+  renderLetters();
+  wireEvents();
+  showScreen(menuScreen);
+  pickWord();
+  pickSentence();
+  pickRhyme();
+  // show initial xp
+  xpBar.style.width = (state.xp||0) + '%';
+  xpText.textContent = `XP: ${state.xp||0}`;
+})();
