@@ -1,4 +1,13 @@
- index.html
-style.css
-app.js
-sounds/ (optional letter sounds)
+your-project/
+│
+├── index.html
+├── style.css
+├── app.js
+├── ding.mp3
+│
+└── img/
+    ├── A.png
+    ├── B.png
+    ├── C.png
+    ├── ... (all letters)
+    └── Z.png
