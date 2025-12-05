@@ -2,114 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Read & Play — ABC Animals</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bubba the Cat – Letters</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="app">
-    <header>
-      <div class="left">
-        <button id="menu-btn" class="icon-btn" aria-label="Menu">☰</button>
-        <h1>Read & Play</h1>
-      </div>
-      <div class="right">
-        <div id="xp-wrap" title="Experience">
-          <div id="xp-bar"></div>
-          <div id="xp-text">XP: 0</div>
-        </div>
-        <div id="mascot" title="Mascot">🐱</div>
-      </div>
-    </header>
 
-    <!-- MAIN MENU -->
-    <main id="menu" class="screen">
-      <section class="panel welcome">
-        <div class="mascot-card">
-          <div class="mascot-big">🐱</div>
-          <h2>Hi! I'm Bubba the Cat</h2>
-          <p>Let's read, play, and earn stickers!</p>
-        </div>
+  <h1 class="title">🐾 Bubba the Cat – Letters</h1>
 
-        <div class="menu-grid">
-          <button class="menu-btn" data-screen="letters">Letters</button>
-          <button class="menu-btn" data-screen="word">Word Builder</button>
-          <button class="menu-btn" data-screen="sentence">Sentence Builder</button>
-          <button class="menu-btn" data-screen="rhyme">Rhyming Game</button>
-          <button class="menu-btn" data-screen="path">Learning Path</button>
-          <button class="menu-btn" data-screen="achieve">Achievements</button>
-        </div>
-      </section>
-    </main>
-
-    <!-- LETTERS SCREEN -->
-    <section id="letters" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Letters</h2>
-      <p class="muted">Tap a letter to hear its sound</p>
-      <div class="letter-grid" role="grid" aria-hidden="false"></div>
-    </section>
-
-    <!-- WORD BUILDER -->
-    <section id="word" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Word Builder</h2>
-      <div class="builder-top">
-        <div id="word-msg" class="muted">Drag letters to build the word</div>
-      </div>
-      <div id="slots" class="slots" aria-label="word slots"></div>
-      <div id="pool" class="pool" aria-label="letters pool"></div>
-      <div class="controls">
-        <button id="check-word" class="action">Check</button>
-        <button id="shuffle-word" class="ghost">Shuffle</button>
-      </div>
-      <p id="word-feedback" class="muted"></p>
-    </section>
-
-    <!-- SENTENCE BUILDER -->
-    <section id="sentence" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Sentence Builder</h2>
-      <p class="muted">Arrange words into the correct sentence</p>
-      <div id="sentence-slots" class="slots"></div>
-      <div id="sentence-pool" class="pool"></div>
-      <div class="controls">
-        <button id="check-sentence" class="action">Check</button>
-        <button id="new-sentence" class="ghost">New</button>
-      </div>
-      <p id="sentence-feedback" class="muted"></p>
-    </section>
-
-    <!-- RHYMING GAME -->
-    <section id="rhyme" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Rhyming Game</h2>
-      <p id="rhyme-target" class="muted"></p>
-      <div id="rhyme-choices" class="pool"></div>
-      <p id="rhyme-feedback" class="muted"></p>
-    </section>
-
-    <!-- LEARNING PATH -->
-    <section id="path" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Learning Path</h2>
-      <div id="path-nodes" class="path-nodes"></div>
-      <p id="path-status" class="muted"></p>
-    </section>
-
-    <!-- ACHIEVEMENTS -->
-    <section id="achieve" class="screen hidden">
-      <button class="nav-back">← Back</button>
-      <h2>Achievements</h2>
-      <div id="ach-list" class="ach-list"></div>
-    </section>
-
-    <footer>
-      <small>ABC Animals theme — Read & Play</small>
-    </footer>
-
-    <audio id="ding-sound" src="ding.mp3"></audio>
+  <div id="bubba">
+    <img src="img/bubba.png" alt="Bubba the Cat" />
   </div>
+
+  <div class="instruction">
+    Click a letter to hear it, and drag it into the box!
+  </div>
+
+  <!-- LETTER BANK -->
+  <div id="letter-bank"></div>
+
+  <!-- PICTURE DISPLAY -->
+  <div id="picture-area">
+    <img id="picture" src="" alt="">
+  </div>
+
+  <!-- DROP ZONE -->
+  <div id="drop-zone">
+    Drop letters here
+  </div>
+
+  <audio id="ding-sound" src="ding.mp3" preload="auto"></audio>
 
   <script src="app.js"></script>
 </body>
