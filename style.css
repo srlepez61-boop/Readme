@@ -34,10 +34,10 @@ body {
 }
 
 .bubba-emoji {
-  font-size: 130px;
+  font-size: 80px;
   line-height: 1;
-  width: 130px;
-  height: 130px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,9 +87,14 @@ body {
   font-size: 0.8rem;
 }
 
-/* SCREENS */
-.screen { padding: 16px; }
-.hidden { display: none; }
+/* GENERAL LAYOUT */
+.screen {
+  padding: 16px;
+}
+
+.hidden {
+  display: none;
+}
 
 .panel {
   max-width: 960px;
@@ -98,6 +103,10 @@ body {
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.muted {
+  color: var(--muted);
 }
 
 /* MENU */
@@ -120,19 +129,19 @@ body {
 /* LETTERS */
 #letters-bank {
   display: grid;
-  grid-template-columns: repeat(13, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit,minmax(32px,1fr));
+  gap: 6px;
   margin: 12px auto;
   max-width: 700px;
 }
 
-.letter-tile {
-  padding: 14px;
-  border-radius: 12px;
+#letters-bank button {
+  padding: 10px;
+  border-radius: 10px;
   background: #fff7df;
   border: 2px solid #ffd17a;
-  font-size: 1.4rem;
-  cursor: grab;
+  font-size: 1.2rem;
+  cursor: pointer;
   text-align: center;
 }
 
@@ -140,6 +149,13 @@ body {
   font-size: 90px;
   text-align: center;
   line-height: 1;
+}
+
+.letters-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
 }
 
 /* PICTURE AREA */
@@ -157,8 +173,8 @@ body {
 }
 
 /* DROP ZONE */
-.drop-zone,
-#letters-drop {
+.drop-zone {
+  flex: 1;
   background: #eef2f6;
   border-radius: 14px;
   border: 3px dashed #aaa;
@@ -173,25 +189,41 @@ body {
   border: 2px solid #ffd17a;
   padding: 8px 14px;
   border-radius: 999px;
-  cursor: grab;
+  cursor: pointer;
 }
 
-/* WORD BUILDER + SENTENCE BUILDER: SHARED SLOT SYSTEM */
+/* WORD / SENTENCE HEADER */
+.screen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.level-chip {
+  background: #ffeaa7;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.9rem;
+}
+
+/* SLOTS (Word & Sentence) */
 .slots {
   display: flex;
   justify-content: center;
   gap: 12px;
   margin: 25px 0;
   min-height: 70px;
+  flex-wrap: wrap;
 }
 
 .slot {
-  width: 80px;
+  width: 70px;
   height: 60px;
   background: #fdf7e3;
   border: 3px dashed #aaa;
   border-radius: 12px;
-  
+
   display: flex;
   justify-content: center;
   align-items: center;
@@ -200,7 +232,7 @@ body {
   text-transform: uppercase;
 }
 
-/* POOL (Word Builder, Sentence, Rhyming, Math) */
+/* POOLS (Word, Sentence, Rhyme, Math) */
 .pool {
   display: flex;
   flex-wrap: wrap;
@@ -209,7 +241,57 @@ body {
   margin-top: 12px;
 }
 
+/* CONTROLS */
+.controls {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.action {
+  background: var(--accent-strong);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.ghost {
+  background: transparent;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.small {
+  font-size: 0.9rem;
+}
+
+/* NAV BACK BUTTON */
+.nav-back {
+  background: transparent;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
 /* TRACING */
+.trace-label-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.trace-label {
+  font-size: 2.4rem;
+  font-weight: bold;
+}
+
 .tracing-container {
   display: flex;
   justify-content: center;
@@ -229,6 +311,7 @@ body {
   margin-top: 18px;
 }
 
+/* FEEDBACK */
 .feedback {
   text-align: center;
   min-height: 40px;
@@ -241,6 +324,8 @@ body {
   display: flex;
   gap: 8px;
   justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 .path-node {
@@ -274,6 +359,42 @@ body {
   gap: 8px;
 }
 
-.ach-icon { font-size: 1.4rem; }
+.ach-icon {
+  font-size: 1.4rem;
+}
 
-.ach-card.locked { opacity: 0.4; }
+.ach-card.locked {
+  opacity: 0.4;
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .bubba-emoji {
+    font-size: 60px;
+    width: 60px;
+    height: 60px;
+  }
+
+  .letters-bottom {
+    flex-direction: column;
+  }
+
+  .picture-area {
+    width: 100%;
+    max-width: 260px;
+  }
+}
