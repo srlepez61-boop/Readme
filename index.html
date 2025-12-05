@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div id="app">
 
@@ -134,7 +135,8 @@
       <h2>Letter Tracing</h2>
 
       <div class="tracing-container">
-        <canvas id="tracing-canvas" width="320" height="320"></canvas>
+        <!-- 🔧 FIXED ID -->
+        <canvas id="trace-canvas" width="320" height="320"></canvas>
       </div>
 
       <div class="controls">
@@ -175,7 +177,6 @@
     </footer>
 
     <audio id="ding-sound" src="ding.mp3" preload="auto"></audio>
-
   </div>
 
   <script src="app.js"></script>
