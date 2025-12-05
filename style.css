@@ -218,7 +218,7 @@ body {
   margin-top: 4px;
 }
 
-/* PICTURE AREA (letters + word builder reuse this) */
+/* PICTURE AREA */
 
 .picture-area {
   width: 170px;
@@ -235,9 +235,14 @@ body {
 }
 
 .picture-area img {
-  display: none;
+  display: none; /* We use emojis instead of images */
 }
 
+.big-emoji {
+  font-size: 90px;
+  line-height: 1.1;
+  text-align: center;
+}
 
 .caption {
   margin-top: 4px;
@@ -444,8 +449,4 @@ body {
   .picture-area, .drop-zone {
     width: 100%;
   }
-}
-.big-emoji {
-  font-size: 90px;
-  line-height: 1.1;
 }
