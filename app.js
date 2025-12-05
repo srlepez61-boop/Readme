@@ -88,33 +88,34 @@ document.addEventListener("DOMContentLoaded", () => {
     ["Z"]
   ];
 
+  // LETTERS now use emojis instead of images
   const LETTER_DATA = {
-    A: { word: "Apple", img: "img/A.png" },
-    B: { word: "Ball", img: "img/B.png" },
-    C: { word: "Cat", img: "img/C.png" },
-    D: { word: "Dog", img: "img/D.png" },
-    E: { word: "Elephant", img: "img/E.png" },
-    F: { word: "Fish", img: "img/F.png" },
-    G: { word: "Goat", img: "img/G.png" },
-    H: { word: "Hat", img: "img/H.png" },
-    I: { word: "Ice Cream", img: "img/I.png" },
-    J: { word: "Jelly", img: "img/J.png" },
-    K: { word: "Kite", img: "img/K.png" },
-    L: { word: "Lion", img: "img/L.png" },
-    M: { word: "Monkey", img: "img/M.png" },
-    N: { word: "Nest", img: "img/N.png" },
-    O: { word: "Octopus", img: "img/O.png" },
-    P: { word: "Pig", img: "img/P.png" },
-    Q: { word: "Queen", img: "img/Q.png" },
-    R: { word: "Rabbit", img: "img/R.png" },
-    S: { word: "Sun", img: "img/S.png" },
-    T: { word: "Turtle", img: "img/T.png" },
-    U: { word: "Umbrella", img: "img/U.png" },
-    V: { word: "Violin", img: "img/V.png" },
-    W: { word: "Whale", img: "img/W.png" },
-    X: { word: "Xylophone", img: "img/X.png" },
-    Y: { word: "Yak", img: "img/Y.png" },
-    Z: { word: "Zebra", img: "img/Z.png" }
+    A: { word: "Apple", emoji: "🍎" },
+    B: { word: "Ball", emoji: "🏀" },
+    C: { word: "Cat", emoji: "🐱" },
+    D: { word: "Dog", emoji: "🐶" },
+    E: { word: "Elephant", emoji: "🐘" },
+    F: { word: "Fish", emoji: "🐟" },
+    G: { word: "Goat", emoji: "🐐" },
+    H: { word: "Hat", emoji: "🎩" },
+    I: { word: "Ice Cream", emoji: "🍦" },
+    J: { word: "Jelly", emoji: "🍮" },
+    K: { word: "Kite", emoji: "🪁" },
+    L: { word: "Lion", emoji: "🦁" },
+    M: { word: "Monkey", emoji: "🐒" },
+    N: { word: "Nest", emoji: "🪺" },
+    O: { word: "Octopus", emoji: "🐙" },
+    P: { word: "Pig", emoji: "🐷" },
+    Q: { word: "Queen", emoji: "👸" },
+    R: { word: "Rabbit", emoji: "🐰" },
+    S: { word: "Sun", emoji: "☀️" },
+    T: { word: "Turtle", emoji: "🐢" },
+    U: { word: "Umbrella", emoji: "☂️" },
+    V: { word: "Violin", emoji: "🎻" },
+    W: { word: "Whale", emoji: "🐋" },
+    X: { word: "Xylophone", emoji: "🎼" },
+    Y: { word: "Yak", emoji: "🐃" },
+    Z: { word: "Zebra", emoji: "🦓" }
   };
 
   const WORD_LEVELS = [
@@ -122,17 +123,18 @@ document.addEventListener("DOMContentLoaded", () => {
     "BIRD","TREE","MILK","CLOUD","SNAKE"
   ];
 
-  const WORD_IMAGES = {
-    CAT: "img/CAT.png",
-    DOG: "img/DOG.png",
-    SUN: "img/SUN.png",
-    FROG: "img/FROG.png",
-    FISH: "img/FISH.png",
-    BIRD: "img/BIRD.png",
-    TREE: "img/TREE.png",
-    MILK: "img/MILK.png",
-    CLOUD: "img/CLOUD.png",
-    SNAKE: "img/SNAKE.png"
+  // Emojis for Word Builder words
+  const WORD_EMOJIS = {
+    CAT: "🐱",
+    DOG: "🐶",
+    SUN: "☀️",
+    FROG: "🐸",
+    FISH: "🐟",
+    BIRD: "🐦",
+    TREE: "🌳",
+    MILK: "🥛",
+    CLOUD: "☁️",
+    SNAKE: "🐍"
   };
 
   const SENTENCE_LEVELS = [
@@ -149,20 +151,20 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const RHYME_LEVELS = [
-    { base: "cat", correct: "hat", others: ["dog","bus"] },
-    { base: "sun", correct: "run", others: ["cup","fish"] },
-    { base: "ball", correct: "tall", others: ["bed","fox"] },
-    { base: "tree", correct: "bee", others: ["hat","pig"] },
-    { base: "cake", correct: "lake", others: ["rock","bug"] },
-    { base: "book", correct: "hook", others: ["pen","door"] },
-    { base: "moon", correct: "spoon", others: ["chair","train"] },
-    { base: "star", correct: "car", others: ["shoe","lamp"] },
-    { base: "chair", correct: "bear", others: ["cup","ring"] },
+    { base: "cat",   correct: "hat",   others: ["dog","bus"] },
+    { base: "sun",   correct: "run",   others: ["cup","fish"] },
+    { base: "ball",  correct: "tall",  others: ["bed","fox"] },
+    { base: "tree",  correct: "bee",   others: ["hat","pig"] },
+    { base: "cake",  correct: "lake",  others: ["rock","bug"] },
+    { base: "book",  correct: "hook",  others: ["pen","door"] },
+    { base: "moon",  correct: "spoon", others: ["chair","train"] },
+    { base: "star",  correct: "car",   others: ["shoe","lamp"] },
+    { base: "chair", correct: "bear",  others: ["cup","ring"] },
     { base: "mouse", correct: "house", others: ["ship","lake"] }
   ];
 
   /* ---------------------------------------------------
-   * LETTERS GAME
+   * LETTERS GAME (with emojis)
    * --------------------------------------------------- */
   let lettersLevelIndex = 0;
 
@@ -201,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (d) {
           const sentence = `${ch} is for ${d.word}.`;
           speak(sentence);
-          showLettersPicture(d.img, sentence);
+          showLetterEmoji(d.emoji, sentence);
         } else {
           speak(ch);
         }
@@ -211,22 +213,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function showLettersPicture(src, caption) {
-    if (!src) {
-      lettersPic.style.display = "none";
-      lettersCaption.textContent = "";
-      return;
-    }
-    lettersPic.src = src;
-    lettersPic.onload = () => {
-      lettersPic.style.display = "block";
-      lettersCaption.textContent = caption;
-      lettersPic.alt = caption;
-    };
-    lettersPic.onerror = () => {
-      lettersPic.style.display = "none";
-      lettersCaption.textContent = caption;
-    };
+  function showLetterEmoji(emoji, sentence) {
+    // We ignore the <img> and show a big emoji instead
+    lettersPic.style.display = "none";
+    lettersCaption.innerHTML = `
+      <div class="big-emoji">${emoji}</div>
+      <div>${sentence}</div>
+    `;
   }
 
   lettersDrop.addEventListener("dragover", e => {
@@ -274,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ---------------------------------------------------
-   * WORD BUILDER GAME
+   * WORD BUILDER GAME (with emojis)
    * --------------------------------------------------- */
   let wordLevelIndex = 0;
 
@@ -290,17 +283,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const wordNext = document.getElementById("word-next");
 
   function showWordPicture(word) {
-    const path = WORD_IMAGES[word] || "";
-    if (path) {
-      wordImg.src = path;
-      wordImg.style.display = "block";
-      const caption = `This is a ${word.toLowerCase()}.`;
-      wordImgCaption.textContent = caption;
-      wordImg.alt = caption;
-    } else {
-      wordImg.style.display = "none";
-      wordImgCaption.textContent = "";
-    }
+    const emoji = WORD_EMOJIS[word] || "❓";
+
+    // Hide the <img>, use emoji in caption instead
+    wordImg.style.display = "none";
+    wordImgCaption.innerHTML = `
+      <div class="big-emoji">${emoji}</div>
+      <div>This is ${word.toLowerCase()}.</div>
+    `;
   }
 
   function renderWordLevel() {
@@ -523,12 +513,12 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.textContent = word;
       btn.addEventListener("click", () => {
         if (word === level.correct) {
-          rhymeFeedback.textContent = "✅ Yes, that rhymes!";
+          rhymeFeedback.textContent = "✅ Yes, that rhymes! 🌟";
           speak(`${level.base} rhymes with ${level.correct}.`);
           addXP(6);
           markLevelCompleted(rhymeLevelIndex + 1);
         } else {
-          rhymeFeedback.textContent = "❌ Try a different word.";
+          rhymeFeedback.textContent = "❌ Try a different word.`;
         }
       });
       rhymeChoices.appendChild(btn);
