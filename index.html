@@ -1,46 +1,71 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Read & Play Learning App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8">
+  <title>Read & Play</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Read & Play</h1>
+  <header>
+    <h1>Read & Play</h1>
+    <div id="level-display">Level: <span id="level-num">1</span></div>
+    <div id="xp-bar"><div id="xp-fill"></div><span id="xp-num">0</span> XP</div>
+    <div id="path"></div>
+  </header>
 
-  <!-- XP & Level -->
-  <section id="progress">
-    <div>Level: <span id="level-num">1</span></div>
-    <div>XP: <span id="xp-num">0</span></div>
-    <div id="xp-bar"><div id="xp-fill"></div></div>
-  </section>
+  <nav>
+    <button class="game-btn" data-game="word">Word Builder</button>
+    <button class="game-btn" data-game="phonics">Phonics</button>
+    <button class="game-btn" data-game="rhyming">Rhyming</button>
+    <button class="game-btn" data-game="sentence">Sentence Builder</button>
+    <button class="game-btn" data-game="flashcard">Flashcards</button>
+  </nav>
 
-  <!-- LETTER SOUNDS -->
-  <section id="letters">
-    <h2>Tap a letter to hear its sound</h2>
-    <div class="letter-grid"></div>
-  </section>
+  <main>
+    <!-- Word Builder -->
+    <section id="word-game" class="game-section">
+      <h2>Build the word</h2>
+      <img id="pic" alt="picture">
+      <div id="slots"></div>
+      <div id="letters-pool"></div>
+      <button id="check-btn">Check</button>
+      <p id="msg"></p>
+    </section>
 
-  <!-- WORD BUILDER -->
-  <section id="word-builder">
-    <h2>Build the word</h2>
-    <img id="pic" src="" alt="picture" />
-    <div id="slots"></div>
-    <div id="letters-pool"></div>
-    <button id="check-btn">Check</button>
-    <p id="msg"></p>
-  </section>
+    <!-- Phonics -->
+    <section id="phonics-game" class="game-section">
+      <h2>Phonics</h2>
+      <div class="letter-grid"></div>
+    </section>
 
-  <!-- FLASHCARDS -->
-  <section id="flashcards">
-    <h2>Sight-word flashcards</h2>
-    <div id="card">?</div>
-    <button id="next-card">Next</button>
-  </section>
+    <!-- Rhyming -->
+    <section id="rhyming-game" class="game-section">
+      <h2>Rhyming</h2>
+      <p id="rhyme-prompt"></p>
+      <div id="rhyme-options"></div>
+      <p id="rhyme-msg"></p>
+    </section>
 
-  <!-- REWARD ANIMATION -->
-  <div id="reward-animation" class="hidden">🎉✨⭐</div>
+    <!-- Sentence Builder -->
+    <section id="sentence-game" class="game-section">
+      <h2>Sentence Builder</h2>
+      <div id="sentence-slots"></div>
+      <div id="sentence-pool"></div>
+      <button id="check-sentence">Check Sentence</button>
+      <p id="sentence-msg"></p>
+    </section>
+
+    <!-- Flashcards -->
+    <section id="flashcard-game" class="game-section">
+      <h2>Flashcards</h2>
+      <div id="card">?</div>
+      <button id="next-card">Next</button>
+    </section>
+  </main>
+
+  <!-- Rewards -->
+  <div id="reward-animation" class="hidden">🎉 +XP!</div>
 
   <script src="app.js"></script>
 </body>
