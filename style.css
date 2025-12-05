@@ -1,78 +1,141 @@
-/* ABCmouse-Animals theme — style.css */
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap');
-
-:root{
-  --bg:#fff8ec;
-  --accent:#ff6f00;
-  --muted:#666;
-  --card:#ffffff;
-  --green:#43a047;
-  --yellow:#ffe082;
-  --shadow: 0 8px 24px rgba(20,20,40,0.08);
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:'Baloo 2',system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;background:var(--bg);color:#222}
-#app{max-width:980px;margin:0 auto;padding:12px}
+body {
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  background-color: #fff8e7;
+  color: #333;
+}
 
-header{display:flex;justify-content:space-between;align-items:center;padding:10px 4px}
-.left{display:flex;align-items:center;gap:12px}
-.icon-btn{font-size:1.2rem;padding:8px;border-radius:10px;border:0;background:var(--yellow);cursor:pointer}
-h1{margin:0;color:var(--accent)}
-.right{display:flex;align-items:center;gap:12px}
+.screen {
+  display: none;
+  padding: 1rem;
+}
 
-/* XP */
-#xp-wrap{position:relative;width:220px;height:28px;background:#eee;border-radius:16px;overflow:hidden}
-#xp-bar{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--green),#7ed957);transition:width .7s}
-#xp-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+.screen:not(.hidden) {
+  display: block;
+}
 
-/* mascot */
-#mascot{font-size:28px}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #ffd966;
+}
 
-/* screens */
-.screen{padding:12px;margin-top:6px}
-.hidden{display:none}
+.icon-btn {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
 
-/* menu */
-.menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
-.menu-btn{background:var(--yellow);border-radius:12px;padding:16px;font-weight:800;border:0;cursor:pointer;box-shadow:var(--shadow);font-size:1rem}
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
 
-/* builder */
-.builder-top{display:flex;align-items:center;gap:12px;justify-content:center;margin:10px 0}
-#word-pic{width:84px;height:84px;border-radius:12px;background:#fff;display:block;padding:8px}
-.muted{color:var(--muted)}
-.slots{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
-.slot{width:56px;height:56px;border-radius:10px;border:2px dashed #ddd;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem}
-.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:8px}
-.letter-tile,.word-tile,.rhyme-choice{padding:8px 12px;border-radius:10px;background:var(--yellow);font-weight:800;cursor:grab}
-.letter-tile.dragging,.word-tile.dragging{opacity:.5}
+.menu-btn, .action, .ghost {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
 
-/* controls */
-.controls{display:flex;gap:8px;justify-content:center;margin-top:8px}
-.action{background:var(--accent);color:#fff;padding:8px 12px;border-radius:10px;border:0;font-weight:800;cursor:pointer}
-.ghost{background:transparent;border:2px solid #eee;padding:8px 12px;border-radius:10px;cursor:pointer}
+.menu-btn {
+  background-color: #ffb347;
+  color: #fff;
+}
 
-/* learning path */
-.path-nodes{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin:12px 0}
-.level-node{width:56px;height:56px;border-radius:50%;background:#ffb300;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;cursor:pointer;position:relative}
-.level-node.completed{background:var(--green)}
-.level-node::after{content:'';position:absolute;right:-36px;top:50%;width:36px;height:6px;background:#ddd;border-radius:4px}
-.level-node:last-child::after{display:none}
+.menu-btn:hover {
+  transform: scale(1.05);
+}
 
-/* achievements */
-.ach-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-.ach{background:#fff;padding:12px;border-radius:12px;box-shadow:var(--shadow);font-weight:800}
+.action {
+  background-color: #ff7f50;
+  color: white;
+}
 
-/* overlay reward */
-.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:999}
-.reward-card{background:#fff;padding:18px;border-radius:12px;text-align:center;position:relative}
-canvas#confetti{position:absolute;inset:0;pointer-events:none;border-radius:12px}
+.ghost {
+  background-color: transparent;
+  color: #ff7f50;
+  border: 2px solid #ff7f50;
+}
 
-/* nav back */
-.nav-back{background:transparent;border:0;font-weight:800;cursor:pointer;margin-bottom:8px}
+.mascot-card {
+  text-align: center;
+  margin-bottom: 1rem;
+}
 
-/* responsive */
-@media (max-width:520px){
-  #xp-wrap{width:150px}
-  .menu-grid{grid-template-columns:repeat(2,1fr)}
+.mascot-big {
+  font-size: 4rem;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* XP Bar */
+#xp-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+#xp-bar {
+  width: 100px;
+  height: 10px;
+  background: #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+#xp-bar::after {
+  content: '';
+  display: block;
+  width: 0%;
+  height: 100%;
+  background: #ff7f50;
+  transition: width 0.3s;
+}
+
+/* Reward overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.reward-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 90%;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.8rem;
+  color: #555;
 }
