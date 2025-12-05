@@ -1,133 +1,96 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const screens = document.querySelectorAll('.screen');
-  const menuButtons = document.querySelectorAll('.menu-btn');
-  const backButtons = document.querySelectorAll('.nav-back');
-  const dingSound = document.getElementById('ding-sound');
+const dropZone = document.getElementById("drop-zone");
+const letterBank = document.getElementById("letter-bank");
+const dingSound = document.getElementById("ding-sound");
+const picture = document.getElementById("picture");
 
-  function showScreen(id) {
-    screens.forEach(s => s.classList.add('hidden'));
-    document.getElementById(id)?.classList.remove('hidden');
-  }
-  menuButtons.forEach(btn => btn.addEventListener('click', () => showScreen(btn.dataset.screen)));
-  backButtons.forEach(btn => btn.addEventListener('click', () => showScreen('menu')));
-  showScreen('menu');
+// A–Z words
+const LETTERS = {
+  A: "Apple",
+  B: "Ball",
+  C: "Cat",
+  D: "Dog",
+  E: "Elephant",
+  F: "Fish",
+  G: "Goat",
+  H: "Hat",
+  I: "Ice cream",
+  J: "Jelly",
+  K: "Kite",
+  L: "Lion",
+  M: "Monkey",
+  N: "Nest",
+  O: "Octopus",
+  P: "Pig",
+  Q: "Queen",
+  R: "Rabbit",
+  S: "Sun",
+  T: "Turtle",
+  U: "Umbrella",
+  V: "Violin",
+  W: "Whale",
+  X: "Xylophone",
+  Y: "Yak",
+  Z: "Zebra"
+};
 
-  // ===== Letters =====
-  const lettersGrid = document.querySelector('.letter-grid');
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(letter => {
-    const btn = document.createElement('button');
-    btn.textContent = letter; btn.className = 'letter-btn';
-    btn.addEventListener('click', () => alert(`You clicked ${letter}`));
-    lettersGrid.appendChild(btn);
+// Create letter blocks
+Object.keys(LETTERS).forEach(letter => {
+  const div = document.createElement("div");
+  div.className = "letter";
+  div.textContent = letter;
+  div.draggable = true;
+  div.dataset.letter = letter;
+  div.dataset.word = LETTERS[letter];
+  div.dataset.img = `img/${letter}.png`;
+
+  letterBank.appendChild(div);
+
+  // CLICK = speak + show image
+  div.addEventListener("click", () => {
+    speak(`${letter}. ${LETTERS[letter]}.`);
+    picture.src = div.dataset.img;
+    picture.style.display = "block";
   });
 
-  function animateDrop(element) {
-    element.style.transform = 'scale(1.3)';
-    element.style.transition = 'transform 0.2s';
-    setTimeout(() => element.style.transform='scale(1)', 200);
-    dingSound.currentTime=0; dingSound.play();
-  }
-
-  function makeDraggable(el, type) {
-    el.setAttribute('draggable','true');
-    el.addEventListener('dragstart', e => e.dataTransfer.setData('text', el.dataset[type]));
-  }
-
-  // ===== Word Builder =====
-  const slots = document.getElementById('slots');
-  const pool = document.getElementById('pool');
-  const wordFeedback = document.getElementById('word-feedback');
-  let currentWord = 'CAT'.split('');
-
-  function populateWordBuilder() {
-    slots.innerHTML=''; pool.innerHTML='';
-    currentWord.forEach(()=> {
-      const slot = document.createElement('div');
-      slot.classList.add('slot');
-      slot.addEventListener('dragover', e => e.preventDefault());
-      slot.addEventListener('drop', e => {
-        const letter = e.dataTransfer.getData('text');
-        const dragged = document.querySelector(`[data-letter="${letter}"]`);
-        if(dragged) { slot.appendChild(dragged); animateDrop(dragged); }
-      });
-      slots.appendChild(slot);
-    });
-    ['C','A','T','B','D','E'].forEach(l=>{
-      const btn=document.createElement('button');
-      btn.textContent=l; btn.className='pool-btn'; btn.dataset.letter=l;
-      makeDraggable(btn,'letter');
-      pool.appendChild(btn);
-    });
-    wordFeedback.textContent='';
-  }
-  populateWordBuilder();
-
-  document.getElementById('check-word').addEventListener('click', () => {
-    const built = Array.from(slots.children).map(s=>s.firstChild?.textContent||'').join('');
-    wordFeedback.textContent = built===currentWord.join('')?'✅ Correct!':'❌ Try again!';
+  // DRAG START
+  div.addEventListener("dragstart", e => {
+    e.dataTransfer.setData("text", letter);
   });
-  document.getElementById('shuffle-word').addEventListener('click', populateWordBuilder);
+});
 
-  // ===== Sentence Builder =====
-  const sentenceSlots = document.getElementById('sentence-slots');
-  const sentencePool = document.getElementById('sentence-pool');
-  const sentenceFeedback = document.getElementById('sentence-feedback');
-  const sentenceWords = ['The','cat','runs'];
+// SPEECH
+function speak(text) {
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.rate = 0.9;
+  msg.pitch = 1.1;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
+}
 
-  function populateSentence() {
-    sentenceSlots.innerHTML=''; sentencePool.innerHTML='';
-    sentenceWords.forEach(()=> {
-      const slot=document.createElement('div'); slot.classList.add('slot');
-      slot.addEventListener('dragover', e=>e.preventDefault());
-      slot.addEventListener('drop', e=>{
-        const word = e.dataTransfer.getData('text');
-        const dragged = document.querySelector(`[data-word="${word}"]`);
-        if(dragged) { slot.appendChild(dragged); animateDrop(dragged); }
-      });
-      sentenceSlots.appendChild(slot);
-    });
-    shuffle(sentenceWords).forEach(w=>{
-      const btn=document.createElement('button');
-      btn.textContent=w; btn.className='pool-btn'; btn.dataset.word=w;
-      makeDraggable(btn,'word'); sentencePool.appendChild(btn);
-    });
-    sentenceFeedback.textContent='';
-  }
-  populateSentence();
-  document.getElementById('check-sentence').addEventListener('click', () => {
-    const built=Array.from(sentenceSlots.children).map(s=>s.firstChild?.textContent||'').join(' ');
-    sentenceFeedback.textContent = built===sentenceWords.join(' ')?'✅ Correct!':'❌ Try again!';
-  });
-  document.getElementById('new-sentence').addEventListener('click', populateSentence);
+// DRAG OVER DROP ZONE
+dropZone.addEventListener("dragover", e => {
+  e.preventDefault();
+  dropZone.classList.add("hover");
+});
 
-  // ===== Rhyming Game =====
-  const rhymeTarget = document.getElementById('rhyme-target');
-  const rhymeChoices = document.getElementById('rhyme-choices');
-  const rhymeFeedback = document.getElementById('rhyme-feedback');
-  const targetWord='cat';
-  const options=['dog','hat','sun'];
-  rhymeTarget.textContent = `Select a word that rhymes with "${targetWord}"`;
-  options.forEach(opt=>{
-    const btn=document.createElement('button'); btn.textContent=opt; btn.className='pool-btn';
-    btn.addEventListener('click', ()=> rhymeFeedback.textContent = opt==='hat'?'✅ Correct!':'❌ Try again!');
-    rhymeChoices.appendChild(btn);
-  });
+dropZone.addEventListener("dragleave", () => {
+  dropZone.classList.remove("hover");
+});
 
-  // ===== Learning Path =====
-  const pathNodes=document.getElementById('path-nodes');
-  const pathStatus=document.getElementById('path-status');
-  ['Letters','Word Builder','Sentence Builder','Rhymes'].forEach(n=>{
-    const div=document.createElement('div'); div.textContent=n; div.className='path-node';
-    pathNodes.appendChild(div);
-  });
-  pathStatus.textContent='You have completed 0 of 4 nodes.';
+// DROP
+dropZone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropZone.classList.remove("hover");
 
-  // ===== Achievements =====
-  const achList=document.getElementById('ach-list');
-  ['First Letter','First Word','First Sentence'].forEach(a=>{
-    const div=document.createElement('div'); div.textContent=a; div.className='ach-item';
-    achList.appendChild(div);
-  });
+  const letter = e.dataTransfer.getData("text");
+  const elem = document.querySelector(`[data-letter="${letter}"]`);
 
-  function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+  // animate
+  elem.style.transform = "scale(1.3)";
+  setTimeout(() => elem.style.transform = "scale(1)", 200);
+
+  dingSound.currentTime = 0;
+  dingSound.play();
+
+  dropZone.appendChild(elem);
 });
