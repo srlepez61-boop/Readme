@@ -1,14 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Read & Play — Bubba the Cat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <title>Read & Play — ABC Animals</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app">
-    <!-- HEADER -->
     <header>
       <div class="left">
         <button id="menu-btn" class="icon-btn" aria-label="Menu">☰</button>
@@ -31,6 +30,7 @@
           <h2>Hi! I'm Bubba the Cat</h2>
           <p>Let's read, play, and earn stickers!</p>
         </div>
+
         <div class="menu-grid">
           <button class="menu-btn" data-screen="letters">Letters</button>
           <button class="menu-btn" data-screen="word">Word Builder</button>
@@ -44,72 +44,71 @@
 
     <!-- LETTERS SCREEN -->
     <section id="letters" class="screen hidden">
-      <button class="nav-back" aria-label="Go back">← Back</button>
+      <button class="nav-back">← Back</button>
       <h2>Letters</h2>
-      <p class="muted" aria-live="polite">Tap a letter to hear its sound</p>
+      <p class="muted">Tap a letter to hear its sound</p>
       <div class="letter-grid" role="grid" aria-hidden="false"></div>
     </section>
 
-    <!-- WORD BUILDER SCREEN -->
+    <!-- WORD BUILDER -->
     <section id="word" class="screen hidden">
-      <button class="nav-back" aria-label="Go back">← Back</button>
+      <button class="nav-back">← Back</button>
       <h2>Word Builder</h2>
       <div class="builder-top">
-        <img id="word-pic" alt="emoji">
-        <div id="word-msg" class="muted" aria-live="polite">Drag or tap letters to build the word</div>
+        <div id="word-msg" class="muted">Drag letters to build the word</div>
       </div>
-      <div id="slots" class="slots" aria-label="Word slots"></div>
-      <div id="pool" class="pool" aria-label="Letters pool"></div>
+      <div id="slots" class="slots" aria-label="word slots"></div>
+      <div id="pool" class="pool" aria-label="letters pool"></div>
       <div class="controls">
         <button id="check-word" class="action">Check</button>
-        <button id="hint-word" class="ghost">Hint</button>
         <button id="shuffle-word" class="ghost">Shuffle</button>
       </div>
-      <p id="word-feedback" class="muted" aria-live="polite"></p>
+      <p id="word-feedback" class="muted"></p>
     </section>
 
-    <!-- SENTENCE BUILDER SCREEN -->
+    <!-- SENTENCE BUILDER -->
     <section id="sentence" class="screen hidden">
-      <button class="nav-back" aria-label="Go back">← Back</button>
+      <button class="nav-back">← Back</button>
       <h2>Sentence Builder</h2>
-      <p class="muted" aria-live="polite">Arrange words into the correct sentence</p>
+      <p class="muted">Arrange words into the correct sentence</p>
       <div id="sentence-slots" class="slots"></div>
       <div id="sentence-pool" class="pool"></div>
       <div class="controls">
         <button id="check-sentence" class="action">Check</button>
         <button id="new-sentence" class="ghost">New</button>
       </div>
-      <p id="sentence-feedback" class="muted" aria-live="polite"></p>
+      <p id="sentence-feedback" class="muted"></p>
     </section>
 
-    <!-- RHYMING GAME SCREEN -->
+    <!-- RHYMING GAME -->
     <section id="rhyme" class="screen hidden">
-      <button class="nav-back" aria-label="Go back">← Back</button>
+      <button class="nav-back">← Back</button>
       <h2>Rhyming Game</h2>
-      <p id="rhyme-target" class="muted" aria-live="polite"></p>
+      <p id="rhyme-target" class="muted"></p>
       <div id="rhyme-choices" class="pool"></div>
-      <p id="rhyme-feedback" class="muted" aria-live="polite"></p>
+      <p id="rhyme-feedback" class="muted"></p>
     </section>
 
-    <!-- LEARNING PATH SCREEN -->
+    <!-- LEARNING PATH -->
     <section id="path" class="screen hidden">
-      <button class="nav-back" aria-label="Go back">← Back</button>
+      <button class="nav-back">← Back</button>
       <h2>Learning Path</h2>
       <div id="path-nodes" class="path-nodes"></div>
-      <p id="path-status" class="muted" aria-live="polite"></p>
+      <p id="path-status" class="muted"></p>
     </section>
 
-    <!-- ACHIEVEMENTS SCREEN -->
+    <!-- ACHIEVEMENTS -->
     <section id="achieve" class="screen hidden">
-      <button class="nav-back" aria-label="Go back">← Back</button>
+      <button class="nav-back">← Back</button>
       <h2>Achievements</h2>
       <div id="ach-list" class="ach-list"></div>
     </section>
 
-
     <footer>
       <small>ABC Animals theme — Read & Play</small>
     </footer>
+
+    <audio id="ding-sound" src="ding.mp3"></audio>
   </div>
 
   <script src="app.js"></script>
