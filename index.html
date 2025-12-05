@@ -2,36 +2,166 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Bubba the Cat – Letters</title>
+  <title>Read & Play – Bubba’s Adventure</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="app">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-left">
+        <img id="bubba" src="img/bubba.png" alt="Bubba the Cat" />
+        <div>
+          <h1>Bubba’s Reading Adventure</h1>
+          <p class="subtitle">Explore 10 levels in each game!</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div id="xp-wrap">
+          <div id="xp-label">XP</div>
+          <div id="xp-bar-outer">
+            <div id="xp-bar-inner"></div>
+          </div>
+          <div id="xp-text">0 / 100</div>
+        </div>
+      </div>
+    </header>
 
-  <h1 class="title">🐾 Bubba the Cat – Letters</h1>
+    <!-- MAIN MENU / MAP -->
+    <main id="menu" class="screen">
+      <section class="panel">
+        <h2>Adventure Map</h2>
+        <p class="muted">Choose a game or follow the path from level 1 to 10.</p>
 
-  <div id="bubba">
-    <img src="img/bubba.png" alt="Bubba the Cat" />
+        <div id="path-map" class="path-map">
+          <!-- nodes are filled by JS -->
+        </div>
+
+        <div class="menu-grid">
+          <button class="menu-btn" data-screen="letters">Letters</button>
+          <button class="menu-btn" data-screen="word">Word Builder</button>
+          <button class="menu-btn" data-screen="sentence">Sentence Builder</button>
+          <button class="menu-btn" data-screen="rhyme">Rhyming Game</button>
+          <button class="menu-btn" data-screen="path">Learning Path</button>
+          <button class="menu-btn" data-screen="achieve">Achievements</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- LETTERS -->
+    <section id="letters" class="screen hidden">
+      <button class="nav-back">← Back to Map</button>
+      <div class="screen-header">
+        <h2>Letters</h2>
+        <div class="level-chip">Level <span id="letters-level">1</span> / 10</div>
+      </div>
+      <p class="muted">
+        Click a letter to hear it and see a picture. Drag letters into Bubba’s treasure box!
+      </p>
+      <div id="letters-bank" class="letter-bank"></div>
+
+      <div class="letters-bottom">
+        <div id="letters-picture-area" class="picture-area">
+          <img id="letters-picture" src="" alt="" />
+          <div id="letters-caption" class="caption"></div>
+        </div>
+
+        <div id="letters-drop" class="drop-zone">Drop letters here</div>
+      </div>
+
+      <div class="controls">
+        <button id="letters-prev" class="ghost small">◀ Prev level</button>
+        <button id="letters-next" class="ghost small">Next level ▶</button>
+      </div>
+    </section>
+
+    <!-- WORD BUILDER -->
+    <section id="word" class="screen hidden">
+      <button class="nav-back">← Back to Map</button>
+      <div class="screen-header">
+        <h2>Word Builder</h2>
+        <div class="level-chip">Level <span id="word-level">1</span> / 10</div>
+      </div>
+      <p class="muted">Drag letters into the boxes to spell the word.</p>
+
+      <div id="word-target" class="target-hint"></div>
+
+      <div id="word-slots" class="slots"></div>
+      <div id="word-pool" class="pool"></div>
+
+      <div class="controls">
+        <button id="check-word" class="action">Check</button>
+        <button id="word-prev" class="ghost small">◀ Prev level</button>
+        <button id="word-next" class="ghost small">Next level ▶</button>
+      </div>
+      <p id="word-feedback" class="feedback"></p>
+    </section>
+
+    <!-- SENTENCE BUILDER -->
+    <section id="sentence" class="screen hidden">
+      <button class="nav-back">← Back to Map</button>
+      <div class="screen-header">
+        <h2>Sentence Builder</h2>
+        <div class="level-chip">Level <span id="sent-level">1</span> / 10</div>
+      </div>
+      <p class="muted">Drag the words into the correct order to make a sentence.</p>
+
+      <div id="sentence-slots" class="slots"></div>
+      <div id="sentence-pool" class="pool"></div>
+
+      <div class="controls">
+        <button id="check-sentence" class="action">Check</button>
+        <button id="sent-prev" class="ghost small">◀ Prev level</button>
+        <button id="sent-next" class="ghost small">Next level ▶</button>
+      </div>
+      <p id="sentence-feedback" class="feedback"></p>
+    </section>
+
+    <!-- RHYMING GAME -->
+    <section id="rhyme" class="screen hidden">
+      <button class="nav-back">← Back to Map</button>
+      <div class="screen-header">
+        <h2>Rhyming Game</h2>
+        <div class="level-chip">Level <span id="rhyme-level">1</span> / 10</div>
+      </div>
+      <p id="rhyme-target" class="muted"></p>
+      <div id="rhyme-choices" class="pool"></div>
+
+      <div class="controls">
+        <button id="rhyme-prev" class="ghost small">◀ Prev level</button>
+        <button id="rhyme-next" class="ghost small">Next level ▶</button>
+      </div>
+      <p id="rhyme-feedback" class="feedback"></p>
+    </section>
+
+    <!-- LEARNING PATH (detail view) -->
+    <section id="path" class="screen hidden">
+      <button class="nav-back">← Back to Map</button>
+      <h2>Learning Path</h2>
+      <p class="muted">
+        Each step on the path is a level. Earn XP by finishing levels in any game.
+      </p>
+      <div id="path-detail" class="path-map large"></div>
+      <p id="path-status" class="feedback"></p>
+    </section>
+
+    <!-- ACHIEVEMENTS -->
+    <section id="achieve" class="screen hidden">
+      <button class="nav-back">← Back to Map</button>
+      <h2>Achievements</h2>
+      <p class="muted">Play games and level up to unlock badges.</p>
+      <div id="ach-list" class="ach-list">
+        <!-- filled by JS -->
+      </div>
+    </section>
+
+    <footer class="footer">
+      <small>Read & Play — Bubba the Cat Adventure</small>
+    </footer>
+
+    <audio id="ding-sound" src="ding.mp3" preload="auto"></audio>
   </div>
-
-  <div class="instruction">
-    Click a letter to hear it, and drag it into the box!
-  </div>
-
-  <!-- LETTER BANK -->
-  <div id="letter-bank"></div>
-
-  <!-- PICTURE DISPLAY -->
-  <div id="picture-area">
-    <img id="picture" src="" alt="">
-  </div>
-
-  <!-- DROP ZONE -->
-  <div id="drop-zone">
-    Drop letters here
-  </div>
-
-  <audio id="ding-sound" src="ding.mp3" preload="auto"></audio>
 
   <script src="app.js"></script>
 </body>
