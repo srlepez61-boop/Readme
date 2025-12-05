@@ -8,161 +8,164 @@
 </head>
 
 <body>
-<div id="app">
+  <div id="app">
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-left">
-      <img id="bubba" src="bubba.png" alt="Bubba" />
-      <div>
-        <h1>Bubba’s Reading Adventure</h1>
-        <p class="subtitle">Explore fun activities with Bubba!</p>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-left">
+        <img id="bubba" src="img/bubba.png" alt="Bubba" />
+        <div>
+          <h1>Bubba’s Adventure</h1>
+          <p class="subtitle">Learn letters, words, sentences, math & tracing!</p>
+        </div>
       </div>
-    </div>
 
-    <div class="header-right">
-      <div id="xp-wrap">
-        <div id="xp-label">XP</div>
-        <div id="xp-bar-outer"><div id="xp-bar-inner"></div></div>
-        <div id="xp-text">0 / 100</div>
+      <div class="header-right">
+        <div id="xp-wrap">
+          <div id="xp-label">XP</div>
+          <div id="xp-bar-outer">
+            <div id="xp-bar-inner"></div>
+          </div>
+          <div id="xp-text">0 / 100</div>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- MAIN MENU -->
-  <main id="menu" class="screen">
-    <section class="panel">
-      <h2>Adventure Map</h2>
-      <p class="muted">Choose a game with Bubba!</p>
+    <!-- MAIN MENU -->
+    <main id="menu" class="screen">
+      <section class="panel">
+        <h2>Adventure Map</h2>
+        <p class="muted">Choose a game to play.</p>
 
-      <div id="path-map" class="path-map"></div>
+        <div class="menu-grid">
+          <button class="menu-btn" data-screen="letters">Letters</button>
+          <button class="menu-btn" data-screen="word">Word Builder</button>
+          <button class="menu-btn" data-screen="sentence">Sentence Builder</button>
+          <button class="menu-btn" data-screen="rhyme">Rhyming Game</button>
+          <button class="menu-btn" data-screen="trace">Tracing Game</button>
+          <button class="menu-btn" data-screen="math">Math Game</button>
+          <button class="menu-btn" data-screen="path">Learning Path</button>
+          <button class="menu-btn" data-screen="achieve">Achievements</button>
+        </div>
+      </section>
+    </main>
 
-      <div class="menu-grid">
-        <button class="menu-btn" data-screen="letters">Letters</button>
-        <button class="menu-btn" data-screen="word">Word Builder</button>
-        <button class="menu-btn" data-screen="sentence">Sentence Builder</button>
-        <button class="menu-btn" data-screen="rhyme">Rhyming Game</button>
-        <button class="menu-btn" data-screen="path">Learning Path</button>
-        <button class="menu-btn" data-screen="achieve">Achievements</button>
-      </div>
-    </section>
-  </main>
+    <!-- LETTERS GAME -->
+    <section id="letters" class="screen hidden">
+      <button class="nav-back">← Back</button>
+      <h2>Letters A–Z</h2>
 
-  <!-- LETTERS GAME -->
-  <section id="letters" class="screen hidden">
-    <button class="nav-back">← Back</button>
+      <p class="muted">Tap a letter to hear it. Drag into the box.</p>
 
-    <div class="screen-header">
-      <h2>Letters</h2>
-      <div class="level-chip">A–Z</div>
-    </div>
+      <div id="letters-bank" class="letter-bank"></div>
 
-    <p class="muted">Tap a letter to see and hear what it stands for.</p>
-
-    <div id="letters-bank" class="letter-bank"></div>
-
-    <div class="letters-bottom">
-      <div class="picture-area">
+      <div class="letters-bottom">
+        <div id="letters-drop" class="drop-zone">Drop letters here</div>
         <div id="letters-caption" class="caption"></div>
       </div>
+    </section>
 
-      <div id="letters-drop" class="drop-zone">Drop letters here</div>
-    </div>
-
-  </section>
-
-  <!-- WORD BUILDER -->
-  <section id="word" class="screen hidden">
-    <button class="nav-back">← Back</button>
-
-    <div class="screen-header">
+    <!-- WORD BUILDER -->
+    <section id="word" class="screen hidden">
+      <button class="nav-back">← Back</button>
       <h2>Word Builder</h2>
-      <div class="level-chip">Level <span id="word-level">1</span> / 10</div>
-    </div>
 
-    <div class="picture-area">
-      <div id="word-img-caption" class="caption"></div>
-    </div>
+      <div id="word-caption" class="caption big-emoji"></div>
 
-    <div id="word-target" class="target-hint"></div>
-    <div id="word-slots" class="slots"></div>
-    <div id="word-pool" class="pool"></div>
+      <div id="word-target" class="target-hint"></div>
+      <div id="word-slots" class="slots"></div>
+      <div id="word-pool" class="pool"></div>
 
-    <div class="controls">
-      <button id="check-word" class="action">Check</button>
-      <button id="word-prev" class="ghost small">◀ Prev</button>
-      <button id="word-next" class="ghost small">Next ▶</button>
-    </div>
+      <div class="controls">
+        <button id="check-word" class="action">Check</button>
+      </div>
 
-    <p id="word-feedback" class="feedback"></p>
-  </section>
+      <p id="word-feedback" class="feedback"></p>
+    </section>
 
-  <!-- SENTENCE BUILDER -->
-  <section id="sentence" class="screen hidden">
-    <button class="nav-back">← Back</button>
-
-    <div class="screen-header">
+    <!-- SENTENCE BUILDER -->
+    <section id="sentence" class="screen hidden">
+      <button class="nav-back">← Back</button>
       <h2>Sentence Builder</h2>
-      <div class="level-chip">Level <span id="sent-level">1</span> / 10</div>
-    </div>
+      <p class="muted">Drag the words into the correct order.</p>
 
-    <div id="sentence-slots" class="slots"></div>
-    <div id="sentence-pool" class="pool"></div>
+      <div id="sentence-slots" class="slots"></div>
+      <div id="sentence-pool" class="pool"></div>
 
-    <div class="controls">
-      <button id="check-sentence" class="action">Check</button>
-      <button id="sent-prev" class="ghost small">◀ Prev</button>
-      <button id="sent-next" class="ghost small">Next ▶</button>
-    </div>
+      <div class="controls">
+        <button id="check-sentence" class="action">Check</button>
+      </div>
 
-    <p id="sentence-feedback" class="feedback"></p>
-  </section>
+      <p id="sentence-feedback" class="feedback"></p>
+    </section>
 
-  <!-- RHYMING GAME -->
-  <section id="rhyme" class="screen hidden">
-    <button class="nav-back">← Back</button>
-
-    <div class="screen-header">
+    <!-- RHYMING GAME -->
+    <section id="rhyme" class="screen hidden">
+      <button class="nav-back">← Back</button>
       <h2>Rhyming Game</h2>
-      <div class="level-chip">Level <span id="rhyme-level">1</span> / 10</div>
-    </div>
 
-    <p id="rhyme-target" class="muted"></p>
-    <div id="rhyme-choices" class="pool"></div>
+      <p id="rhyme-target" class="muted"></p>
+      <div id="rhyme-choices" class="pool"></div>
 
-    <div class="controls">
-      <button id="rhyme-prev" class="ghost small">◀ Prev</button>
-      <button id="rhyme-next" class="ghost small">Next ▶</button>
-    </div>
+      <p id="rhyme-feedback" class="feedback"></p>
+    </section>
 
-    <p id="rhyme-feedback" class="feedback"></p>
-  </section>
+    <!-- TRACING GAME -->
+    <section id="trace" class="screen hidden">
+      <button class="nav-back">← Back</button>
+      <h2>Letter Tracing</h2>
 
-  <!-- LEARNING PATH -->
-  <section id="path" class="screen hidden">
-    <button class="nav-back">← Back</button>
-    <h2>Learning Path</h2>
-    <p class="muted">Complete levels to move along the path!</p>
+      <p class="muted">Follow Bubba’s animated stroke, then trace yourself!</p>
 
-    <div id="path-detail" class="path-map large"></div>
-    <p id="path-status" class="feedback"></p>
-  </section>
+      <div id="trace-controls">
+        <button id="trace-prev" class="ghost small">◀</button>
+        <span id="trace-label">A</span>
+        <button id="trace-next" class="ghost small">▶</button>
+      </div>
 
-  <!-- ACHIEVEMENTS -->
-  <section id="achieve" class="screen hidden">
-    <button class="nav-back">← Back</button>
-    <h2>Achievements</h2>
-    <div id="ach-list" class="ach-list"></div>
-  </section>
+      <canvas id="trace-canvas" width="400" height="400"></canvas>
 
-  <footer class="footer">
-    <small>Read & Play — Bubba the Cat Adventure</small>
-  </footer>
+      <p id="trace-feedback" class="feedback"></p>
+    </section>
 
-  <audio id="ding-sound" src="sounds/ding.mp3" preload="auto"></audio>
+    <!-- MATH GAME -->
+    <section id="math" class="screen hidden">
+      <button class="nav-back">← Back</button>
+      <h2>Math Game</h2>
 
-</div>
+      <p class="muted">Solve the problem using emojis + numbers.</p>
 
-<script src="app.js"></script>
+      <div id="math-problem" class="math-problem"></div>
+      <div id="math-choices" class="math-choices"></div>
+
+      <p id="math-feedback" class="feedback"></p>
+    </section>
+
+    <!-- LEARNING PATH -->
+    <section id="path" class="screen hidden">
+      <button class="nav-back">← Back</button>
+      <h2>Learning Path</h2>
+
+      <div id="path-map" class="path-map"></div>
+      <p id="path-status" class="feedback"></p>
+    </section>
+
+    <!-- ACHIEVEMENTS -->
+    <section id="achieve" class="screen hidden">
+      <button class="nav-back">← Back</button>
+      <h2>Achievements</h2>
+
+      <div id="ach-list" class="ach-list"></div>
+    </section>
+
+    <footer class="footer">
+      <small>Bubba’s Adventure</small>
+    </footer>
+
+    <audio id="ding-sound" src="ding.mp3" preload="auto"></audio>
+
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
