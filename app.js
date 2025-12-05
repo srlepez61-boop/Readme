@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+
   /* ---------------------------------------------------
    * NAVIGATION
    * --------------------------------------------------- */
@@ -20,8 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showScreen("menu");
 
+
   /* ---------------------------------------------------
-   * XP & PATH PROGRESSION
+   * XP SYSTEM
    * --------------------------------------------------- */
   let xp = 0;
   let maxLevelReached = 1;
@@ -49,8 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+
   /* ---------------------------------------------------
-   * SPEECH + DING
+   * SPEECH + SOUND
    * --------------------------------------------------- */
   function speak(text) {
     if (!("speechSynthesis" in window)) return;
@@ -69,45 +72,106 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch {}
   }
 
-  /* ---------------------------------------------------
-   * EMOJI DATA
-   * --------------------------------------------------- */
 
-  const LETTER_LEVELS = [
-    ["A","B","C"],["D","E","F"],["G","H","I"],
-    ["J","K","L"],["M","N","O"],["P","Q","R"],
-    ["S","T","U"],["V","W"],["X","Y"],["Z"]
+  /* ---------------------------------------------------
+   * DATA — LETTERS A–Z WITH EMOJI
+   * --------------------------------------------------- */
+  const LETTERS = [
+    "A","B","C","D","E","F","G","H","I",
+    "J","K","L","M","N","O","P","Q","R",
+    "S","T","U","V","W","X","Y","Z"
   ];
 
   const LETTER_DATA = {
-    A:{ word:"Apple",     emoji:"🍎" },
-    B:{ word:"Ball",      emoji:"🏀" },
-    C:{ word:"Cat",       emoji:"🐱" },
-    D:{ word:"Dog",       emoji:"🐶" },
-    E:{ word:"Elephant",  emoji:"🐘" },
-    F:{ word:"Fish",      emoji:"🐟" },
-    G:{ word:"Goat",      emoji:"🐐" },
-    H:{ word:"Hat",       emoji:"🎩" },
+    A:{ word:"Apple", emoji:"🍎" },
+    B:{ word:"Ball", emoji:"🏀" },
+    C:{ word:"Cat", emoji:"🐱" },
+    D:{ word:"Dog", emoji:"🐶" },
+    E:{ word:"Elephant", emoji:"🐘" },
+    F:{ word:"Fish", emoji:"🐟" },
+    G:{ word:"Goat", emoji:"🐐" },
+    H:{ word:"Hat", emoji:"🎩" },
     I:{ word:"Ice Cream", emoji:"🍦" },
-    J:{ word:"Jelly",     emoji:"🍮" },
-    K:{ word:"Kite",      emoji:"🪁" },
-    L:{ word:"Lion",      emoji:"🦁" },
-    M:{ word:"Monkey",    emoji:"🐒" },
-    N:{ word:"Nest",      emoji:"🪺" },
-    O:{ word:"Octopus",   emoji:"🐙" },
-    P:{ word:"Pig",       emoji:"🐷" },
-    Q:{ word:"Queen",     emoji:"👸" },
-    R:{ word:"Rabbit",    emoji:"🐰" },
-    S:{ word:"Sun",       emoji:"☀️" },
-    T:{ word:"Turtle",    emoji:"🐢" },
-    U:{ word:"Umbrella",  emoji:"☂️" },
-    V:{ word:"Violin",    emoji:"🎻" },
-    W:{ word:"Whale",     emoji:"🐋" },
+    J:{ word:"Jelly", emoji:"🍮" },
+    K:{ word:"Kite", emoji:"🪁" },
+    L:{ word:"Lion", emoji:"🦁" },
+    M:{ word:"Monkey", emoji:"🐒" },
+    N:{ word:"Nest", emoji:"🪺" },
+    O:{ word:"Octopus", emoji:"🐙" },
+    P:{ word:"Pig", emoji:"🐷" },
+    Q:{ word:"Queen", emoji:"👸" },
+    R:{ word:"Rabbit", emoji:"🐰" },
+    S:{ word:"Sun", emoji:"☀️" },
+    T:{ word:"Turtle", emoji:"🐢" },
+    U:{ word:"Umbrella", emoji:"☂️" },
+    V:{ word:"Violin", emoji:"🎻" },
+    W:{ word:"Whale", emoji:"🐋" },
     X:{ word:"Xylophone", emoji:"🎼" },
-    Y:{ word:"Yak",       emoji:"🐃" },
-    Z:{ word:"Zebra",     emoji:"🦓" }
+    Y:{ word:"Yak", emoji:"🐃" },
+    Z:{ word:"Zebra", emoji:"🦓" }
   };
 
+
+  /* ---------------------------------------------------
+   * LETTERS GAME — FULL A–Z
+   * --------------------------------------------------- */
+  const lettersBank = document.getElementById("letters-bank");
+  const lettersDrop = document.getElementById("letters-drop");
+  const lettersCaption = document.getElementById("letters-caption");
+
+  function showLetterEmoji(emoji, sentence) {
+    lettersCaption.innerHTML = `
+      <div class="big-emoji">${emoji}</div>
+      <div>${sentence}</div>
+    `;
+  }
+
+  function renderLetters() {
+    lettersBank.innerHTML = "";
+    lettersDrop.innerHTML = "Drop letters here";
+    lettersCaption.innerHTML = "";
+
+    LETTERS.forEach(letter => {
+      const btn = document.createElement("button");
+      btn.className = "letter-tile";
+      btn.textContent = letter;
+      btn.dataset.letter = letter;
+      btn.setAttribute("draggable","true");
+
+      // Drag
+      btn.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text/plain", letter);
+      });
+
+      // Tap
+      btn.addEventListener("click", () => {
+        const data = LETTER_DATA[letter];
+        const sentence = `${letter} is for ${data.word}.`;
+        speak(sentence);
+        showLetterEmoji(data.emoji, sentence);
+      });
+
+      lettersBank.appendChild(btn);
+    });
+  }
+
+  // Drop zone
+  lettersDrop.addEventListener("dragover", e => e.preventDefault());
+  lettersDrop.addEventListener("drop", e => {
+    e.preventDefault();
+    const letter = e.dataTransfer.getData("text/plain");
+    const tile = lettersBank.querySelector(`[data-letter="${letter}"]`);
+    if (tile) {
+      lettersDrop.appendChild(tile);
+      ding();
+      addXP(1);
+    }
+  });
+
+
+  /* ---------------------------------------------------
+   * WORD BUILDER (unchanged)
+   * --------------------------------------------------- */
   const WORD_LEVELS = [
     "CAT","DOG","SUN","FROG","FISH",
     "BIRD","TREE","MILK","CLOUD","SNAKE"
@@ -118,102 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     BIRD:"🐦", TREE:"🌳", MILK:"🥛", CLOUD:"☁️", SNAKE:"🐍"
   };
 
-  const SENTENCE_LEVELS = [
-    "I see a cat","The dog runs fast","Bubba likes milk",
-    "We play outside","The sun is bright","The frog can jump",
-    "I read a book","The fish can swim",
-    "We go to school","The bird can fly"
-  ];
-
-  const RHYME_LEVELS = [
-    { base:"cat",correct:"hat",others:["dog","bus"] },
-    { base:"sun",correct:"run",others:["cup","fish"] },
-    { base:"ball",correct:"tall",others:["bed","fox"] },
-    { base:"tree",correct:"bee",others:["hat","pig"] },
-    { base:"cake",correct:"lake",others:["rock","bug"] },
-    { base:"book",correct:"hook",others:["pen","door"] },
-    { base:"moon",correct:"spoon",others:["chair","train"] },
-    { base:"star",correct:"car",others:["shoe","lamp"] },
-    { base:"chair",correct:"bear",others:["cup","ring"] },
-    { base:"mouse",correct:"house",others:["ship","lake"] }
-  ];
-
-  /* ---------------------------------------------------
-   * LETTERS GAME (emoji)
-   * --------------------------------------------------- */
-  let lettersLevelIndex = 0;
-
-  const lettersLevelLabel = document.getElementById("letters-level");
-  const lettersBank = document.getElementById("letters-bank");
-  const lettersDrop = document.getElementById("letters-drop");
-  const lettersCaption = document.getElementById("letters-caption");
-  const lettersPrev = document.getElementById("letters-prev");
-  const lettersNext = document.getElementById("letters-next");
-
-  function showLetterEmoji(emoji, sentence) {
-    lettersCaption.innerHTML = `
-      <div class="big-emoji">${emoji}</div>
-      <div>${sentence}</div>
-    `;
-  }
-
-  function renderLettersLevel() {
-    lettersLevelLabel.textContent = lettersLevelIndex + 1;
-
-    lettersBank.innerHTML = "";
-    lettersDrop.innerHTML = "Drop letters here";
-    lettersCaption.innerHTML = "";
-
-    LETTER_LEVELS[lettersLevelIndex].forEach(ch => {
-      const btn = document.createElement("button");
-      btn.className = "letter-tile";
-      btn.textContent = ch;
-      btn.dataset.letter = ch;
-      btn.setAttribute("draggable","true");
-
-      btn.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain", ch);
-      });
-
-      btn.addEventListener("click", () => {
-        const d = LETTER_DATA[ch];
-        const sentence = `${ch} is for ${d.word}.`;
-        speak(sentence);
-        showLetterEmoji(d.emoji, sentence);
-      });
-
-      lettersBank.appendChild(btn);
-    });
-  }
-
-  lettersDrop.addEventListener("dragover", e => e.preventDefault());
-  lettersDrop.addEventListener("drop", e => {
-    e.preventDefault();
-    const letter = e.dataTransfer.getData("text/plain");
-    const tile = lettersBank.querySelector(`[data-letter="${letter}"]`);
-    if (tile) {
-      lettersDrop.appendChild(tile);
-      ding();
-    }
-  });
-
-  lettersPrev.addEventListener("click", () => {
-    if (lettersLevelIndex > 0) {
-      lettersLevelIndex--;
-      renderLettersLevel();
-    }
-  });
-
-  lettersNext.addEventListener("click", () => {
-    if (lettersLevelIndex < LETTER_LEVELS.length - 1) {
-      lettersLevelIndex++;
-      renderLettersLevel();
-    }
-  });
-
-  /* ---------------------------------------------------
-   * WORD BUILDER GAME (emoji)
-   * --------------------------------------------------- */
   let wordLevelIndex = 0;
 
   const wordLevelLabel = document.getElementById("word-level");
@@ -242,18 +210,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     showWordPicture(word);
 
-    // slots
+    // Make slots
     for (let i = 0; i < word.length; i++) {
       const slot = document.createElement("div");
       slot.className = "slot";
       wordSlots.appendChild(slot);
     }
 
-    // pool
-    const base = word.split("");
+    // Make letter pool
+    const baseLetters = word.split("");
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    const extras = alphabet.filter(c => !base.includes(c)).sort(() => Math.random() - 0.5).slice(0, 6 - base.length);
-    const poolLetters = [...base, ...extras].sort(() => Math.random() - 0.5);
+    const extras = alphabet
+      .filter(c => !baseLetters.includes(c))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 6 - baseLetters.length);
+
+    const poolLetters = [...baseLetters, ...extras].sort(
+      () => Math.random() - 0.5
+    );
 
     poolLetters.forEach((ch, idx) => {
       const token = document.createElement("button");
@@ -261,20 +235,21 @@ document.addEventListener("DOMContentLoaded", () => {
       token.textContent = ch;
       token.dataset.id = `w-${wordLevelIndex}-${idx}`;
       token.setAttribute("draggable","true");
+
       token.addEventListener("dragstart", e => {
         e.dataTransfer.setData("text/plain", token.dataset.id);
       });
+
       wordPool.appendChild(token);
     });
 
     wordSlots.querySelectorAll(".slot").forEach(slot => {
       slot.addEventListener("dragover", e => e.preventDefault());
       slot.addEventListener("drop", e => {
-        e.preventDefault();
         const id = e.dataTransfer.getData("text/plain");
-        const t = document.querySelector(`[data-id="${id}"]`);
-        if (t) {
-          slot.appendChild(t);
+        const token = document.querySelector(`[data-id="${id}"]`);
+        if (token) {
+          slot.appendChild(token);
           ding();
         }
       });
@@ -284,19 +259,19 @@ document.addEventListener("DOMContentLoaded", () => {
   wordPool.addEventListener("dragover", e => e.preventDefault());
   wordPool.addEventListener("drop", e => {
     const id = e.dataTransfer.getData("text/plain");
-    const t = document.querySelector(`[data-id="${id}"]`);
-    if (t) wordPool.appendChild(t);
+    const token = document.querySelector(`[data-id="${id}"]`);
+    if (token) wordPool.appendChild(token);
   });
 
   document.getElementById("check-word").addEventListener("click", () => {
     const word = WORD_LEVELS[wordLevelIndex];
     const built = Array.from(wordSlots.children)
-      .map(s => s.querySelector(".token")?.textContent || "")
+      .map(slot => slot.querySelector(".token")?.textContent || "")
       .join("");
 
     if (built === word) {
       wordFeedback.textContent = "✅ Great job!";
-      speak(`${word.split("").join(" ")}. ${word}.`);
+      speak(word);
       addXP(8);
       markLevelCompleted(wordLevelIndex + 1);
     } else {
@@ -318,9 +293,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
   /* ---------------------------------------------------
-   * SENTENCE BUILDER GAME
+   * SENTENCE BUILDER
    * --------------------------------------------------- */
+  const SENTENCE_LEVELS = [
+    "I see a cat",
+    "The dog runs fast",
+    "Bubba likes milk",
+    "We play outside",
+    "The sun is bright",
+    "The frog can jump",
+    "I read a book",
+    "The fish can swim",
+    "We go to school",
+    "The bird can fly"
+  ];
+
   let sentLevelIndex = 0;
 
   const sentLevelLabel = document.getElementById("sent-level");
@@ -344,50 +333,53 @@ document.addEventListener("DOMContentLoaded", () => {
       sentSlots.appendChild(slot);
     });
 
-    const mixed = [...words].sort(() => Math.random() - 0.5);
+    const shuffled = [...words].sort(() => Math.random() - 0.5);
 
-    mixed.forEach((word, idx) => {
-      const t = document.createElement("button");
-      t.className = "token";
-      t.textContent = word;
-      t.dataset.id = `s-${sentLevelIndex}-${idx}`;
-      t.setAttribute("draggable","true");
-      t.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain", t.dataset.id);
+    shuffled.forEach((word, idx) => {
+      const token = document.createElement("button");
+      token.className = "token";
+      token.textContent = word;
+      token.dataset.id = `s-${sentLevelIndex}-${idx}`;
+      token.setAttribute("draggable","true");
+
+      token.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text/plain", token.dataset.id);
       });
-      sentPool.appendChild(t);
+
+      sentPool.appendChild(token);
     });
 
     sentSlots.querySelectorAll(".slot").forEach(slot => {
       slot.addEventListener("dragover", e => e.preventDefault());
       slot.addEventListener("drop", e => {
         const id = e.dataTransfer.getData("text/plain");
-        const t = document.querySelector(`[data-id="${id}"]`);
-        if (t) slot.appendChild(t);
+        const token = document.querySelector(`[data-id="${id}"]`);
+        if (token) slot.appendChild(token);
       });
     });
   }
 
   sentPool.addEventListener("dragover", e => e.preventDefault());
+
   sentPool.addEventListener("drop", e => {
     const id = e.dataTransfer.getData("text/plain");
-    const t = document.querySelector(`[data-id="${id}"]`);
-    if (t) sentPool.appendChild(t);
+    const token = document.querySelector(`[data-id="${id}"]`);
+    if (token) sentPool.appendChild(token);
   });
 
   document.getElementById("check-sentence").addEventListener("click", () => {
     const correct = SENTENCE_LEVELS[sentLevelIndex];
     const built = Array.from(sentSlots.children)
-      .map(s => s.querySelector(".token")?.textContent || "")
+      .map(slot => slot.querySelector(".token")?.textContent || "")
       .join(" ");
 
     if (built === correct) {
-      sentFeedback.textContent = "✅ Nice sentence!";
+      sentFeedback.textContent = "✅ Correct!";
       speak(correct);
       addXP(10);
       markLevelCompleted(sentLevelIndex + 1);
     } else {
-      sentFeedback.textContent = "❌ Not quite. Try again!";
+      sentFeedback.textContent = "❌ Try again!";
     }
   });
 
@@ -405,9 +397,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
   /* ---------------------------------------------------
    * RHYMING GAME
    * --------------------------------------------------- */
+  const RHYME_LEVELS = [
+    { base:"cat", correct:"hat", others:["dog","bus"] },
+    { base:"sun", correct:"run", others:["cup","fish"] },
+    { base:"ball", correct:"tall", others:["bed","fox"] },
+    { base:"tree", correct:"bee", others:["hat","pig"] },
+    { base:"cake", correct:"lake", others:["rock","bug"] },
+    { base:"book", correct:"hook", others:["pen","door"] },
+    { base:"moon", correct:"spoon", others:["chair","train"] },
+    { base:"star", correct:"car", others:["shoe","lamp"] },
+    { base:"chair", correct:"bear", others:["cup","ring"] },
+    { base:"mouse", correct:"house", others:["ship","lake"] }
+  ];
+
   let rhymeLevelIndex = 0;
 
   const rhymeLevelLabel = document.getElementById("rhyme-level");
@@ -423,21 +429,23 @@ document.addEventListener("DOMContentLoaded", () => {
     rhymeChoices.innerHTML = "";
     rhymeFeedback.textContent = "";
 
-    const choices = [level.correct, ...level.others].sort(() => Math.random() - 0.5);
+    const options = [level.correct, ...level.others].sort(
+      () => Math.random() - 0.5
+    );
 
-    choices.forEach(word => {
+    options.forEach(word => {
       const btn = document.createElement("button");
       btn.className = "token";
       btn.textContent = word;
 
       btn.addEventListener("click", () => {
         if (word === level.correct) {
-          rhymeFeedback.textContent = "✅ Yes, that rhymes!";
+          rhymeFeedback.textContent = "✅ Yes! That rhymes!";
           speak(`${level.base} rhymes with ${level.correct}.`);
           addXP(6);
           markLevelCompleted(rhymeLevelIndex + 1);
         } else {
-          rhymeFeedback.textContent = "❌ Try a different word.";
+          rhymeFeedback.textContent = "❌ Try again!";
         }
       });
 
@@ -458,6 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderRhymeLevel();
     }
   });
+
 
   /* ---------------------------------------------------
    * LEARNING PATH
@@ -484,8 +493,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderPathDetail() {
     renderPath(pathDetail);
-    pathStatus.textContent = `Highest step reached: ${maxLevelReached} / 10`;
+    pathStatus.textContent = `Highest level reached: ${maxLevelReached} / 10`;
   }
+
 
   /* ---------------------------------------------------
    * ACHIEVEMENTS
@@ -493,12 +503,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const achList = document.getElementById("ach-list");
 
   const ACH_CONFIG = [
-    { id:"first-xp", label:"First XP", xp:5,   icon:"⭐" },
-    { id:"half-xp",  label:"Halfway Hero", xp:50, icon:"🌟" },
-    { id:"full-xp",  label:"XP Master", xp:100, icon:"🏆" },
-    { id:"path-3",   label:"Path Explorer", level:3, icon:"🗺️" },
-    { id:"path-7",   label:"Big Adventurer", level:7, icon:"🚀" },
-    { id:"path-10",  label:"Path Champion", level:10, icon:"👑" }
+    { id:"first-xp", label:"First XP", xp:5, icon:"⭐" },
+    { id:"half-xp", label:"Halfway Hero (50 XP)", xp:50, icon:"🌟" },
+    { id:"full-xp", label:"XP Master (100 XP)", xp:100, icon:"🏆" },
+    { id:"path-3", label:"Path Explorer (Level 3)", level:3, icon:"🗺️" },
+    { id:"path-7", label:"Big Adventurer (Level 7)", level:7, icon:"🚀" },
+    { id:"path-10", label:"Path Champion (Level 10)", level:10, icon:"👑" }
   ];
 
   function renderAchievements() {
@@ -516,8 +526,9 @@ document.addEventListener("DOMContentLoaded", () => {
       icon.textContent = a.icon;
 
       const text = document.createElement("div");
-      text.innerHTML = `<strong>${a.label}</strong><br>` +
-                       (a.xp ? `${a.xp} XP` : `Reach level ${a.level}`);
+      text.innerHTML = `<strong>${a.label}</strong><br>${
+        a.xp ? `${a.xp} XP` : `Reach level ${a.level}`
+      }`;
 
       card.appendChild(icon);
       card.appendChild(text);
@@ -525,10 +536,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
   /* ---------------------------------------------------
-   * INITIAL RENDER
+   * INITIALIZE EVERYTHING
    * --------------------------------------------------- */
-  renderLettersLevel();
+  renderLetters();
   renderWordLevel();
   renderSentenceLevel();
   renderRhymeLevel();
@@ -536,4 +548,5 @@ document.addEventListener("DOMContentLoaded", () => {
   renderPathDetail();
   renderAchievements();
   updateXPUI();
+
 });
