@@ -34,14 +34,15 @@ body {
 }
 
 .bubba-emoji {
-  font-size: 64px;
+  font-size: 130px;
   line-height: 1;
-  width: 64px;
-  height: 64px;
+  width: 130px;
+  height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 
 .subtitle {
   margin: 0;
