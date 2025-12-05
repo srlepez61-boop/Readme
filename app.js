@@ -26,14 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
    * --------------------------------------------------- */
   let xp = 0;
   let maxLevelReached = 1;
-  const PATH_MAX = 10; // 🔧 cap path at 10 nodes
+  const PATH_MAX = 10;
 
   const xpBar = document.getElementById("xp-bar-inner");
   const xpText = document.getElementById("xp-text");
 
   function updateXPUI() {
     if (!xpBar || !xpText) return;
-    const clamped = Math.min(100, Math.max(0, xp)); // 🔧 ensure valid
+    const clamped = Math.min(100, Math.max(0, xp));
     xpBar.style.width = clamped + "%";
     xpText.textContent = `${clamped} / 100`;
   }
@@ -45,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function markLevelCompleted(levelNum) {
-    // 🔧 clamp tracing & other game levels
     const clamped = Math.min(levelNum, PATH_MAX);
     if (clamped > maxLevelReached) {
       maxLevelReached = clamped;
@@ -76,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------------------------------------------------
-   * LETTERS A–Z
+   * LETTERS A–Z (tap-based, works on iPhone)
    * --------------------------------------------------- */
   const lettersBank = document.getElementById("letters-bank");
   const lettersDrop = document.getElementById("letters-drop");
@@ -116,58 +115,41 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderAlphabet() {
     if (!lettersBank || !lettersDrop || !lettersCaption) return;
     lettersBank.innerHTML = "";
-    lettersDrop.innerHTML = "Drop letters here";
-    lettersCaption.innerHTML = "";
+    lettersDrop.innerHTML = "Tap letters to move them here.";
+    lettersCaption.innerHTML = "Tap a letter!";
 
     ALPHABET.forEach(letter => {
       const tile = document.createElement("button");
-      tile.className = "letter-tile";
       tile.textContent = letter;
       tile.dataset.letter = letter;
-      tile.setAttribute("draggable", "true");
-
-      tile.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain", letter);
-      });
 
       tile.addEventListener("click", () => {
         const info = LETTER_DATA[letter];
-        if (!info) return;
-        const sentence = `${letter} is for ${info.word}.`;
-        speak(sentence);
-        lettersCaption.innerHTML = `
-          <div class="big-emoji">${info.emoji}</div>
-          <p>${sentence}</p>
-        `;
+        if (info) {
+          const sentence = `${letter} is for ${info.word}.`;
+          lettersCaption.innerHTML = `
+            <div class="big-emoji">${info.emoji}</div>
+            <p>${sentence}</p>
+          `;
+          speak(sentence);
+        }
+
+        // move between bank and drop on tap
+        if (tile.parentElement === lettersBank) {
+          lettersDrop.appendChild(tile);
+          ding();
+          addXP(1);
+        } else {
+          lettersBank.appendChild(tile);
+        }
       });
 
       lettersBank.appendChild(tile);
     });
   }
 
-  if (lettersDrop) {
-    lettersDrop.addEventListener("dragover", e => {
-      e.preventDefault();
-      lettersDrop.classList.add("hover");
-    });
-    lettersDrop.addEventListener("dragleave", () => {
-      lettersDrop.classList.remove("hover");
-    });
-    lettersDrop.addEventListener("drop", e => {
-      e.preventDefault();
-      lettersDrop.classList.remove("hover");
-      const letter = e.dataTransfer.getData("text/plain");
-      const tile = lettersBank.querySelector(`[data-letter="${letter}"]`);
-      if (tile) {
-        lettersDrop.appendChild(tile);
-        ding();
-        addXP(1);
-      }
-    });
-  }
-
   /* ---------------------------------------------------
-   * WORD BUILDER
+   * WORD BUILDER (tap-to-place)
    * --------------------------------------------------- */
   const WORD_LEVELS = [
     "CAT", "DOG", "SUN", "FROG", "FISH",
@@ -195,6 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const wordPool = document.getElementById("word-pool");
   const wordFeedback = document.getElementById("word-feedback");
   const checkWordBtn = document.getElementById("check-word");
+  const wordLevelLabel = document.getElementById("word-level");
 
   function articleFor(word) {
     return /^[aeiou]/i.test(word) ? "an" : "a";
@@ -215,20 +198,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!wordTarget || !wordSlots || !wordPool || !wordFeedback) return;
 
     const word = WORD_LEVELS[wordLevelIndex];
+    if (wordLevelLabel) wordLevelLabel.textContent = (wordLevelIndex + 1).toString();
+
     wordTarget.textContent = `Build the word: ${word}`;
     wordSlots.innerHTML = "";
     wordPool.innerHTML = "";
     wordFeedback.textContent = "";
     showWordEmoji(word);
 
-    // Create slots
+    // create slots
     for (let i = 0; i < word.length; i++) {
       const slot = document.createElement("div");
       slot.className = "slot";
       wordSlots.appendChild(slot);
     }
 
-    // safer pool-size logic 🔧
+    // pool letters (letters of word + a few extras)
     const baseLetters = word.split("");
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     const maxPool = 6;
@@ -243,41 +228,28 @@ document.addEventListener("DOMContentLoaded", () => {
       () => Math.random() - 0.5
     );
 
-    poolLetters.forEach((ch, idx) => {
+    poolLetters.forEach(ch => {
       const token = document.createElement("button");
       token.className = "token";
       token.textContent = ch;
-      token.dataset.id = `w-${wordLevelIndex}-${idx}`;
-      token.setAttribute("draggable", "true");
-      token.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain", token.dataset.id);
-      });
-      wordPool.appendChild(token);
-    });
 
-    // slot listeners
-    wordSlots.querySelectorAll(".slot").forEach(slot => {
-      slot.addEventListener("dragover", e => e.preventDefault());
-      slot.addEventListener("drop", e => {
-        e.preventDefault();
-        const id = e.dataTransfer.getData("text/plain");
-        const token = document.querySelector(`[data-id="${id}"]`);
-        if (token) {
-          slot.appendChild(token);
+      token.addEventListener("click", () => {
+        if (token.parentElement === wordPool) {
+          // move to first empty slot
+          const emptySlot = Array.from(wordSlots.children)
+            .find(s => !s.querySelector(".token"));
+          if (emptySlot) {
+            emptySlot.appendChild(token);
+            ding();
+          }
+        } else {
+          // move back to pool
+          wordPool.appendChild(token);
           ding();
         }
       });
-    });
-  }
 
-  // 🔧 Word pool listeners attached ONCE
-  if (wordPool) {
-    wordPool.addEventListener("dragover", e => e.preventDefault());
-    wordPool.addEventListener("drop", e => {
-      e.preventDefault();
-      const id = e.dataTransfer.getData("text/plain");
-      const token = document.querySelector(`[data-id="${id}"]`);
-      if (token) wordPool.appendChild(token);
+      wordPool.appendChild(token);
     });
   }
 
@@ -302,10 +274,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-document.getElementById("sentence-emoji").textContent = emoji;
 
   /* ---------------------------------------------------
-   * SENTENCE BUILDER
+   * SENTENCE BUILDER (tap-to-place)
    * --------------------------------------------------- */
   const SENTENCE_LEVELS = [
     "I see a cat",
@@ -347,58 +318,49 @@ document.getElementById("sentence-emoji").textContent = emoji;
   const sentPool = document.getElementById("sentence-pool");
   const sentFeedback = document.getElementById("sentence-feedback");
   const checkSentBtn = document.getElementById("check-sentence");
+  const sentLevelLabel = document.getElementById("sent-level");
 
   function renderSentenceLevel() {
     if (!sentSlots || !sentPool || !sentFeedback) return;
     const sentence = SENTENCE_LEVELS[sentLevelIndex];
     const words = sentence.split(" ");
 
+    if (sentLevelLabel) sentLevelLabel.textContent = (sentLevelIndex + 1).toString();
+
     sentSlots.innerHTML = "";
     sentPool.innerHTML = "";
     sentFeedback.innerHTML = "";
 
+    // slots
     words.forEach(() => {
       const slot = document.createElement("div");
       slot.className = "slot";
       sentSlots.appendChild(slot);
     });
 
+    // shuffled tokens
     const shuffled = [...words].sort(() => Math.random() - 0.5);
 
-    shuffled.forEach((word, idx) => {
+    shuffled.forEach(word => {
       const token = document.createElement("button");
       token.className = "token";
       token.textContent = word;
-      token.dataset.id = `s-${sentLevelIndex}-${idx}`;
-      token.setAttribute("draggable", "true");
-      token.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain", token.dataset.id);
-      });
-      sentPool.appendChild(token);
-    });
 
-    sentSlots.querySelectorAll(".slot").forEach(slot => {
-      slot.addEventListener("dragover", e => e.preventDefault());
-      slot.addEventListener("drop", e => {
-        e.preventDefault();
-        const id = e.dataTransfer.getData("text/plain");
-        const token = document.querySelector(`[data-id="${id}"]`);
-        if (token) {
-          slot.appendChild(token);
+      token.addEventListener("click", () => {
+        if (token.parentElement === sentPool) {
+          const emptySlot = Array.from(sentSlots.children)
+            .find(s => !s.querySelector(".token"));
+          if (emptySlot) {
+            emptySlot.appendChild(token);
+            ding();
+          }
+        } else {
+          sentPool.appendChild(token);
           ding();
         }
       });
-    });
-  }
 
-  // 🔧 Sentence pool listeners attached ONCE
-  if (sentPool) {
-    sentPool.addEventListener("dragover", e => e.preventDefault());
-    sentPool.addEventListener("drop", e => {
-      e.preventDefault();
-      const id = e.dataTransfer.getData("text/plain");
-      const token = document.querySelector(`[data-id="${id}"]`);
-      if (token) sentPool.appendChild(token);
+      sentPool.appendChild(token);
     });
   }
 
@@ -475,10 +437,13 @@ document.getElementById("sentence-emoji").textContent = emoji;
   const rhymeTarget = document.getElementById("rhyme-target");
   const rhymeChoices = document.getElementById("rhyme-choices");
   const rhymeFeedback = document.getElementById("rhyme-feedback");
+  const rhymeLevelLabel = document.getElementById("rhyme-level");
 
   function renderRhymeLevel() {
     if (!rhymeTarget || !rhymeChoices || !rhymeFeedback) return;
     const level = RHYME_LEVELS[rhymeLevelIndex];
+
+    if (rhymeLevelLabel) rhymeLevelLabel.textContent = (rhymeLevelIndex + 1).toString();
 
     rhymeChoices.innerHTML = "";
     rhymeFeedback.textContent = "";
@@ -520,7 +485,7 @@ document.getElementById("sentence-emoji").textContent = emoji;
   }
 
   /* ---------------------------------------------------
-   * TRACING GAME
+   * TRACING GAME (canvas – supports touch)
    * --------------------------------------------------- */
   const TRACING_CHARS = [
     ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -562,22 +527,6 @@ document.getElementById("sentence-emoji").textContent = emoji;
     ctx.fillStyle = "#999";
     ctx.fillText(char, w / 2, h / 2);
     ctx.restore();
-
-    let alpha = 0;
-    function step() {
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.strokeStyle = "#ff7f50";
-      ctx.lineWidth = 10;
-      ctx.font = "260px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.strokeText(char, w / 2, h / 2);
-      ctx.restore();
-      alpha += 0.05;
-      if (alpha <= 1) requestAnimationFrame(step);
-    }
-    step();
   }
 
   function startDraw(x, y) {
@@ -615,8 +564,6 @@ document.getElementById("sentence-emoji").textContent = emoji;
       `;
       speak(`Great tracing of ${char}!`);
       addXP(7);
-
-      // 🔧 clamped automatically by markLevelCompleted
       markLevelCompleted(traceIndex + 1);
     }
   }
@@ -736,6 +683,7 @@ document.getElementById("sentence-emoji").textContent = emoji;
 
     arr.forEach(val => {
       const btn = document.createElement("button");
+      btn.className = "token";
       btn.textContent = val;
       btn.addEventListener("click", () => {
         if (val === ans) {
@@ -773,7 +721,7 @@ document.getElementById("sentence-emoji").textContent = emoji;
     for (let i = 1; i <= PATH_MAX; i++) {
       const node = document.createElement("div");
       node.className = "path-node";
-      if (i <= maxLevelReached) node.style.background = "#7dd37d";
+      if (i <= maxLevelReached) node.classList.add("done");
       node.textContent = i;
       pathMap.appendChild(node);
     }
@@ -806,7 +754,7 @@ document.getElementById("sentence-emoji").textContent = emoji;
 
       const card = document.createElement("div");
       card.className = "ach-card";
-      if (!unlocked) card.style.opacity = "0.4";
+      if (!unlocked) card.classList.add("locked");
 
       const icon = document.createElement("div");
       icon.className = "ach-icon";
