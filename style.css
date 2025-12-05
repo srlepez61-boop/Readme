@@ -117,7 +117,7 @@ body {
   cursor: pointer;
 }
 
-/* LETTERS (patched to match JS IDs) */
+/* LETTERS */
 #letters-bank {
   display: grid;
   grid-template-columns: repeat(13, 1fr);
@@ -156,7 +156,7 @@ body {
   justify-content: center;
 }
 
-/* DROP ZONES */
+/* DROP ZONE */
 .drop-zone,
 #letters-drop {
   background: #eef2f6;
@@ -176,20 +176,53 @@ body {
   cursor: grab;
 }
 
-/* TRACING (patched ID) */
-#trace-canvas {
-  background: #fff7d1;
-  border-radius: 20px;
-  border: 3px solid #f4d28c;
+/* WORD BUILDER + SENTENCE BUILDER: SHARED SLOT SYSTEM */
+.slots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 25px 0;
+  min-height: 70px;
 }
 
+.slot {
+  width: 80px;
+  height: 60px;
+  background: #fdf7e3;
+  border: 3px dashed #aaa;
+  border-radius: 12px;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 1.6rem;
+  text-transform: uppercase;
+}
+
+/* POOL (Word Builder, Sentence, Rhyming, Math) */
+.pool {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* TRACING */
 .tracing-container {
   display: flex;
   justify-content: center;
   margin-top: 12px;
 }
 
-/* MATH GAME */
+#trace-canvas {
+  background: #fff7d1;
+  border-radius: 20px;
+  border: 3px solid #f4d28c;
+}
+
+/* MATH */
 .math-problem {
   font-size: 2rem;
   text-align: center;
@@ -243,5 +276,4 @@ body {
 
 .ach-icon { font-size: 1.4rem; }
 
-/* Locked state (used by JS opacity) */
 .ach-card.locked { opacity: 0.4; }
