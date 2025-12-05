@@ -1,460 +1,403 @@
-// app.js — Full rebuild (compact & commented)
-// Saves progress to localStorage: 'rp_state'
+/* app.js — ABCmouse animals full rebuild
+   Features:
+   - 5 levels × 10 words
+   - Letters (phonics), Word Builder, Sentence, Rhyming
+   - XP with lock & level progression
+   - Learning path, achievements, confetti reward
+   - localStorage persistence
+*/
 
-/* ------------------- Utilities ------------------- */
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
-function persist(state){ localStorage.setItem('rp_state', JSON.stringify(state)); }
-function loadState(){ try{ return JSON.parse(localStorage.getItem('rp_state')) || {}; }catch(e){return {};} }
-function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
-function shuffle(arr){ return arr.slice().sort(()=>Math.random()-0.5); }
+(() => {
+  // ---------- DATA ----------
+  const LEVELS = [
+    [{word:'cat',pic:'🐱'},{word:'dog',pic:'🐶'},{word:'sun',pic:'☀️'},{word:'hat',pic:'🎩'},{word:'bat',pic:'🦇'},{word:'fox',pic:'🦊'},{word:'ant',pic:'🐜'},{word:'bee',pic:'🐝'},{word:'cow',pic:'🐮'},{word:'pig',pic:'🐷'}],
+    [{word:'fish',pic:'🐟'},{word:'book',pic:'📖'},{word:'star',pic:'⭐'},{word:'tree',pic:'🌳'},{word:'milk',pic:'🥛'},{word:'cake',pic:'🍰'},{word:'leaf',pic:'🍃'},{word:'moon',pic:'🌙'},{word:'bear',pic:'🐻'},{word:'lion',pic:'🦁'}],
+    [{word:'rain',pic:'🌧️'},{word:'ship',pic:'🚢'},{word:'ring',pic:'💍'},{word:'shoe',pic:'👟'},{word:'ball',pic:'⚽'},{word:'bell',pic:'🔔'},{word:'bike',pic:'🚲'},{word:'clock',pic:'🕰️'},{word:'chair',pic:'🪑'},{word:'table',pic:'🛋️'}],
+    [{word:'train',pic:'🚂'},{word:'plane',pic:'✈️'},{word:'house',pic:'🏠'},{word:'apple',pic:'🍎'},{word:'horse',pic:'🐴'},{word:'watch',pic:'⌚'},{word:'phone',pic:'📱'},{word:'truck',pic:'🚚'},{word:'brush',pic:'🪥'},{word:'piano',pic:'🎹'}],
+    [{word:'garden',pic:'🌷'},{word:'river',pic:'🏞️'},{word:'island',pic:'🏝️'},{word:'mount',pic:'⛰️'},{word:'castle',pic:'🏰'},{word:'robot',pic:'🤖'},{word:'banana',pic:'🍌'},{word:'orange',pic:'🍊'},{word:'teacher',pic:'👩‍🏫'},{word:'doctor',pic:'👨‍⚕️'}]
+  ];
 
-/* ------------------- Data (levels, sentences, rhymes) ------------------- */
-const LEVELS = [
-  [ {word:'cat',pic:'🐱'},{word:'dog',pic:'🐶'},{word:'sun',pic:'☀️'},{word:'hat',pic:'🎩'},{word:'bat',pic:'🦇'},{word:'fox',pic:'🦊'},{word:'ant',pic:'🐜'},{word:'bee',pic:'🐝'},{word:'cow',pic:'🐮'},{word:'pig',pic:'🐷'} ],
-  [ {word:'fish',pic:'🐟'},{word:'book',pic:'📖'},{word:'star',pic:'⭐'},{word:'tree',pic:'🌳'},{word:'milk',pic:'🥛'},{word:'cake',pic:'🍰'},{word:'leaf',pic:'🍃'},{word:'moon',pic:'🌙'},{word:'bear',pic:'🐻'},{word:'lion',pic:'🦁'} ],
-  [ {word:'rain',pic:'🌧️'},{word:'ship',pic:'🚢'},{word:'ring',pic:'💍'},{word:'shoe',pic:'👟'},{word:'ball',pic:'⚽'},{word:'bell',pic:'🔔'},{word:'bike',pic:'🚲'},{word:'clock',pic:'🕰️'},{word:'chair',pic:'🪑'},{word:'table',pic:'🛋️'} ],
-  [ {word:'train',pic:'🚂'},{word:'plane',pic:'✈️'},{word:'house',pic:'🏠'},{word:'apple',pic:'🍎'},{word:'horse',pic:'🐴'},{word:'watch',pic:'⌚'},{word:'phone',pic:'📱'},{word:'truck',pic:'🚚'},{word:'brush',pic:'🪥'},{word:'piano',pic:'🎹'} ],
-  [ {word:'garden',pic:'🌷'},{word:'river',pic:'🏞️'},{word:'island',pic:'🏝️'},{word:'mount',pic:'⛰️'},{word:'castle',pic:'🏰'},{word:'robot',pic:'🤖'},{word:'banana',pic:'🍌'},{word:'orange',pic:'🍊'},{word:'teacher',pic:'👩‍🏫'},{word:'doctor',pic:'👨‍⚕️'} ]
-];
+  const SENTENCES = [['I','see','a','cat'],['The','dog','is','big'],['I','like','the','sun'],['The','fish','swims','fast'],['A','ball','is','red']];
+  const RHYMES = [{target:'cat',options:['bat','dog','sun','hat'],answer:'bat'},{target:'dog',options:['log','cat','sun','fish'],answer:'log'},{target:'sun',options:['fun','run','cat','dog'],answer:'fun'},{target:'ball',options:['fall','cat','dog','fish'],answer:'fall'}];
 
-const SENTENCES = [['I','see','a','cat'],['The','dog','is','big'],['I','like','the','sun'],['The','fish','swims','fast'],['A','ball','is','red']];
-const RHYMES = [{target:'cat',options:['bat','dog','sun','hat'],answer:'bat'},{target:'dog',options:['log','cat','sun','fish'],answer:'log'},{target:'sun',options:['fun','run','cat','dog'],answer:'fun'},{target:'ball',options:['fall','cat','dog','fish'],answer:'fall'}];
+  // ---------- STATE & PERSIST ----------
+  const STORAGE_KEY = 'rp_abc_animals_v1';
+  const initial = {
+    levelIndex:0,
+    xp:0,
+    completed:{}, // keys "level:word"
+    achievements:{},
+  };
+  let state = Object.assign({}, initial, JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'));
 
-/* ------------------- App State & Persistence ------------------- */
-const saved = loadState();
-const state = {
-  levelIndex: saved.levelIndex || 0,
-  xp: saved.xp || 0,
-  completedWords: saved.completedWords || {}, // { '0:cat':true }
-  achievements: saved.achievements || {},
-  avatar: saved.avatar || {color:'#ffb300',hat:'none'}
-};
+  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-/* ------------------- DOM refs ------------------- */
-const screens = $$('main.screen').concat($$('section.screen'));
-const menuScreen = $('#menu');
-const letterScreen = $('#letters');
-const wbScreen = $('#word-builder');
-const sbScreen = $('#sentence-builder');
-const rhScreen = $('#rhyming');
-const pathScreen = $('#path');
-const achScreen = $('#achievements');
+  // ---------- DOM ----------
+  const screens = { menu: document.getElementById('menu'), letters: document.getElementById('letters'),
+    word: document.getElementById('word'), sentence: document.getElementById('sentence'), rhyme: document.getElementById('rhyme'),
+    path: document.getElementById('path'), achieve: document.getElementById('achieve') };
 
-const letterGrid = $('.letter-grid');
-const wbPic = $('#wb-pic');
-const wbSlots = $('#wb-slots');
-const wbPool = $('#wb-pool');
-const wbMsg = $('#wb-msg');
-const sbSlots = $('#sb-slots');
-const sbPool = $('#sb-pool');
-const sbMsg = $('#sb-msg');
-const rgTarget = $('#rg-target');
-const rgChoices = $('#rg-choices');
-const rgMsg = $('#rg-msg');
+  const xpBar = document.getElementById('xp-bar'), xpText = document.getElementById('xp-text');
+  const letterGrid = document.querySelector('.letter-grid');
 
-const xpBar = $('#xp-bar'), xpText = $('#xp-text');
-const pathNodes = $('#path-nodes'), pathStatus = $('#path-status');
-const avatarPreview = $('#avatar-preview');
-const rewardModal = $('#reward'), confettiCanvas = $('#confetti');
+  // word builder elements
+  const wordPic = document.getElementById('word-pic'); const wordMsg = document.getElementById('word-msg');
+  const slots = document.getElementById('slots'); const pool = document.getElementById('pool');
+  const feedbackWord = document.getElementById('word-feedback');
 
-/* ------------------- Audio helpers ------------------- */
-const audioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
-function beep(freq=880, time=0.08, vol=0.15){
-  if(!audioCtx) return;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.frequency.value = freq;
-  g.gain.value = vol;
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime + time);
-}
-function speak(text){ try{ const u = new SpeechSynthesisUtterance(text); u.lang='en-US'; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
+  // sentence
+  const sSlots = document.getElementById('sentence-slots'); const sPool = document.getElementById('sentence-pool'); const sFeedback = document.getElementById('sentence-feedback');
 
-/* ------------------- UI helpers ------------------- */
-function showScreen(el){
-  $$('main.screen, section.screen').forEach(s=>s.classList.add('hidden'));
-  el.classList.remove('hidden');
-}
-function save(){ persist(state); }
+  // rhyme
+  const rhymeTarget = document.getElementById('rhyme-target'); const rhymeChoices = document.getElementById('rhyme-choices'); const rhymeFeedback = document.getElementById('rhyme-feedback');
 
-/* ------------------- Menu & Profile ------------------- */
-function openProfile(){
-  $('#profile-modal').classList.remove('hidden');
-  $('#avatar-color').value = state.avatar.color;
-  $('#avatar-hat').value = state.avatar.hat;
-}
-function closeProfile(){ $('#profile-modal').classList.add('hidden'); }
-function saveProfile(){
-  state.avatar.color = $('#avatar-color').value;
-  state.avatar.hat = $('#avatar-hat').value;
-  renderAvatar();
-  save();
-  closeProfile();
-}
+  // path & achievements
+  const pathNodes = document.getElementById('path-nodes'); const pathStatus = document.getElementById('path-status');
+  const achList = document.getElementById('ach-list');
 
-/* ------------------- Avatar preview ------------------- */
-function renderAvatar(){
-  avatarPreview.innerHTML = '';
-  const a = document.createElement('div');
-  a.className = 'avatar';
-  a.style.background = state.avatar.color;
-  a.textContent = '🙂';
-  avatarPreview.appendChild(a);
-}
+  const rewardOverlay = document.getElementById('reward-overlay');
+  const confettiCanvas = document.getElementById('confetti');
+  const rewardText = document.getElementById('reward-text');
 
-/* ------------------- XP & Path ------------------- */
-function updateXP(amount){
-  state.xp = Math.max(0, Math.min(100, state.xp + amount));
-  xpBar.style.width = state.xp + '%';
-  xpText.textContent = `XP: ${state.xp}`;
-  if(state.xp >= 100){
-    state.xp = 0;
-    state.levelIndex++;
-    if(state.levelIndex >= LEVELS.length){
-      // finished entire path
-      showReward('You finished the learning path! Great job!');
-      state.levelIndex = LEVELS.length - 1;
+  // navigation
+  document.querySelectorAll('.menu-btn').forEach(b => b.addEventListener('click', ()=> {
+    const target = b.dataset.screen;
+    navigateTo(target);
+  }));
+  document.querySelectorAll('.nav-back').forEach(b => b.addEventListener('click', ()=> navigateTo('menu')));
+  document.getElementById('close-reward').addEventListener('click', ()=> hideReward());
+
+  // ---------- UTILS ----------
+  function $(sel){ return document.querySelector(sel); }
+  function shuffle(arr){ return arr.slice().sort(()=>Math.random()-0.5); }
+  function speak(text){ try{ const u=new SpeechSynthesisUtterance(text); u.lang='en-US'; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
+  function beep(freq=440,t=0.08){ try{ const ctx = new (window.AudioContext||window.webkitAudioContext)(); const o = ctx.createOscillator(); const g = ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.frequency.value = freq; g.gain.value = 0.08; o.start(); o.stop(ctx.currentTime + t); }catch(e){} }
+
+  // ---------- NAVIGATION ----------
+  function hideAllScreens(){ Object.values(screens).forEach(s => s.classList.add('hidden')); }
+  function navigateTo(name){
+    hideAllScreens();
+    if(name === 'menu'){ screens.menu.classList.remove('hidden'); }
+    else if(name === 'letters'){ screens.letters.classList.remove('hidden'); renderLetters(); }
+    else if(name === 'word'){ screens.word.classList.remove('hidden'); pickWord(); }
+    else if(name === 'sentence'){ screens.sentence.classList.remove('hidden'); pickSentence(); }
+    else if(name === 'rhyme'){ screens.rhyme.classList.remove('hidden'); pickRhyme(); }
+    else if(name === 'path'){ screens.path.classList.remove('hidden'); renderPath(); }
+    else if(name === 'achieve'){ screens.achieve.classList.remove('hidden'); renderAchievements(); }
+  }
+
+  // ---------- XP (locked to avoid multi-award) ----------
+  let xpLocked = false;
+  function grantXP(amount){
+    if(xpLocked) return;
+    xpLocked = true;
+    state.xp = Math.min(100, (state.xp || 0) + amount);
+    updateXPUI();
+    setTimeout(()=>{ xpLocked = false; }, 700);
+    if(state.xp >= 100){
+      state.xp = 0;
+      state.levelIndex = Math.min(LEVELS.length-1, (state.levelIndex || 0) + 1);
+      saveState();
+      // if finished all levels:
+      if(state.levelIndex >= LEVELS.length-1){
+        showReward('You completed the learning path!');
+      } else {
+        speak('Level up! Great job!');
+      }
+      renderPath();
+    }
+    saveState();
+  }
+  function updateXPUI(){ xpBar.style.width = (state.xp||0) + '%'; xpText.textContent = `XP: ${state.xp||0}`; }
+
+  // ---------- LEARNING PATH ----------
+  function renderPath(){
+    pathNodes.innerHTML = '';
+    for(let i=0;i<LEVELS.length;i++){
+      const node = document.createElement('div'); node.className = 'level-node'; node.textContent = i+1;
+      if(i < state.levelIndex) node.classList.add('completed');
+      node.addEventListener('click', ()=> { state.levelIndex = i; state.xp = 0; saveState(); updateXPUI(); pickWord(); navigateTo('path'); });
+      pathNodes.appendChild(node);
+    }
+    pathStatus.textContent = `Level ${state.levelIndex+1} • Complete words to earn XP`;
+  }
+
+  // ---------- LETTERS (phonics) ----------
+  function renderLetters(){
+    letterGrid.innerHTML = '';
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    [...letters].forEach(l => {
+      const d = document.createElement('div'); d.className = 'letter'; d.textContent = l.toUpperCase();
+      d.addEventListener('click', ()=> { speak(l); // try place a letter if available in pool
+        const chip = Array.from(pool.children).find(c => c.textContent.toLowerCase() === l && c.dataset.used === 'false');
+        if(chip) placeChipToEmpty(chip);
+      });
+      letterGrid.appendChild(d);
+    });
+  }
+
+  // ---------- WORD BUILDER ----------
+  let currentWord = null;
+  function pickWord(){
+    const words = LEVELS[state.levelIndex];
+    // choose an uncompleted word if possible
+    const remaining = words.filter(w => !state.completed[`${state.levelIndex}:${w.word}`]);
+    const poolWords = remaining.length ? remaining : words;
+    currentWord = poolWords[Math.floor(Math.random()*poolWords.length)];
+    setupWordUI();
+  }
+  function setupWordUI(){
+    wordPic.src = ''; wordMsg.textContent = 'Drag or tap letters to build the word'; feedbackWord.textContent = '';
+    slots.innerHTML = ''; pool.innerHTML = '';
+
+    // slots
+    currentWord.word.split('').forEach((ch, idx) => {
+      const s = document.createElement('div'); s.className = 'slot'; s.dataset.pos = idx;
+      s.addEventListener('dragover', e => e.preventDefault());
+      s.addEventListener('drop', onDropToSlot);
+      s.addEventListener('click', ()=> {
+        if(s.textContent){
+          // re-enable chip
+          const letter = s.textContent.toLowerCase();
+          const chip = Array.from(pool.children).find(c => c.textContent.toLowerCase() === letter && c.dataset.used === 'true');
+          if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
+          s.textContent = '';
+          s.classList.remove('filled');
+        }
+      });
+      slots.appendChild(s);
+    });
+
+    // pool (shuffled)
+    shuffle(currentWord.word.split('')).forEach(ch => {
+      const b = document.createElement('button'); b.className = 'letter-tile'; b.textContent = ch.toUpperCase(); b.draggable = true; b.dataset.used = 'false';
+      b.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', ch); b.classList.add('dragging'); });
+      b.addEventListener('dragend', () => b.classList.remove('dragging'));
+      b.addEventListener('click', ()=> { if(b.dataset.used === 'true') return; placeChipToEmpty(b); speak(b.textContent); });
+      pool.appendChild(b);
+    });
+
+    // picture (twemoji)
+    setEmoji(currentWord.pic, wordPic);
+  }
+
+  function onDropToSlot(e){
+    e.preventDefault();
+    const letter = e.dataTransfer.getData('text/plain');
+    if(!letter) return;
+    const chip = Array.from(pool.children).find(c => c.textContent.toLowerCase() === letter && c.dataset.used === 'false');
+    if(!chip) return;
+    const target = e.currentTarget;
+    if(target.textContent) return;
+    target.textContent = chip.textContent; target.classList.add('filled'); chip.dataset.used = 'true'; chip.disabled = true;
+  }
+
+  function placeChipToEmpty(chip){
+    const empty = Array.from(slots.children).find(s => !s.textContent);
+    if(!empty) return;
+    empty.textContent = chip.textContent; empty.classList.add('filled'); chip.dataset.used = 'true'; chip.disabled = true;
+  }
+
+  function checkWord(){
+    if(!currentWord) return;
+    const built = Array.from(slots.children).map(s => s.textContent || '').join('').toLowerCase();
+    if(built === currentWord.word){
+      feedbackWord.textContent = '🎉 Correct! +20 XP';
+      grantSuccessForWord();
     } else {
-      speak('Level up! Well done!');
-      blinkLevel(state.levelIndex);
+      feedbackWord.textContent = 'Try again!';
+      beep(220,0.08);
     }
   }
-  save();
-  renderPath();
-}
 
-function renderPath(){
-  pathNodes.innerHTML = '';
-  for(let i=0;i<LEVELS.length;i++){
-    const node = document.createElement('div');
-    node.className = 'level-node' + (i < state.levelIndex ? ' completed' : '');
-    node.textContent = i+1;
-    node.addEventListener('click', ()=> { state.levelIndex = i; state.xp = 0; save(); renderPath(); pickWord(); showScreen(pathScreen);});
-    pathNodes.appendChild(node);
-  }
-  pathStatus.textContent = `Level ${state.levelIndex+1} of ${LEVELS.length}`;
-}
-
-function blinkLevel(i){
-  const nodes = $$('.level-node');
-  if(nodes[i]) nodes[i].animate([{transform:'scale(1)'},{transform:'scale(1.2)'},{transform:'scale(1)'}],{duration:700});
-}
-
-/* ------------------- Word Builder logic ------------------- */
-let currentWord = null;
-
-function pickWord(){
-  const words = LEVELS[state.levelIndex];
-  if(!words || words.length === 0) return;
-  // choose a word not completed yet if possible
-  const remaining = words.filter(w => !state.completedWords[`${state.levelIndex}:${w.word}`]);
-  const pool = remaining.length ? remaining : words;
-  currentWord = pool[Math.floor(Math.random()*pool.length)];
-  setupWordUI();
-}
-
-function setupWordUI(){
-  wbPic.src = '';
-  wbSlots.innerHTML = '';
-  wbPool.innerHTML = '';
-  wbMsg.textContent = 'Drag or tap letters to build the word';
-  setPic(currentWord.pic, wbPic);
-
-  // slots
-  currentWord.word.split('').forEach((ch, idx) => {
-    const s = document.createElement('div');
-    s.className = 'slot';
-    s.dataset.pos = idx;
-    s.addEventListener('dragover', e => e.preventDefault());
-    s.addEventListener('drop', onDropToSlot);
-    s.addEventListener('click', ()=> {
-      if(s.textContent){
-        // re-enable matching chip
-        const letter = s.textContent.toLowerCase();
-        const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === letter && c.dataset.used === 'true');
-        if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
-        s.textContent = '';
-        s.classList.remove('filled');
-      }
-    });
-    wbSlots.appendChild(s);
-  });
-
-  // shuffle chips
-  shuffle(currentWord.word.split('')).forEach(ch => {
-    const chip = document.createElement('button');
-    chip.className = 'letter-tile';
-    chip.textContent = ch.toUpperCase();
-    chip.draggable = true;
-    chip.dataset.used = 'false';
-    chip.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', ch); chip.classList.add('dragging');});
-    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-    chip.addEventListener('click', ()=>{ if(chip.dataset.used === 'true') return; placeChipToFirstEmpty(chip); speak(chip.textContent); });
-    wbPool.appendChild(chip);
-  });
-}
-
-function onDropToSlot(e){
-  e.preventDefault();
-  const letter = e.dataTransfer.getData('text/plain');
-  if(!letter) return;
-  const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === letter && c.dataset.used === 'false');
-  if(!chip) return;
-  const target = e.currentTarget;
-  if(target.textContent) return; // already filled
-  target.textContent = chip.textContent;
-  target.classList.add('filled');
-  chip.dataset.used = 'true';
-  chip.disabled = true;
-}
-
-function placeChipToFirstEmpty(chip){
-  const empty = Array.from(wbSlots.children).find(s => !s.textContent);
-  if(!empty) return;
-  empty.textContent = chip.textContent;
-  empty.classList.add('filled');
-  chip.dataset.used = 'true';
-  chip.disabled = true;
-}
-
-function checkWord(){
-  if(!currentWord) return;
-  const built = Array.from(wbSlots.children).map(s => s.textContent || '').join('').toLowerCase();
-  if(built === currentWord.word){
-    wbMsg.textContent = 'Correct! +20 XP';
+  function grantSuccessForWord(){
     beep(880,0.08); speak(currentWord.word);
-    updateXP(20);
-    state.completedWords[`${state.levelIndex}:${currentWord.word}`] = true;
-    save();
-    // quick celebration
-    $$('#wb-pool .letter-tile').forEach(c => c.disabled = true);
-    setTimeout(()=> pickWord(), 900);
-  } else {
-    wbMsg.textContent = 'Try again!';
-    beep(220,0.06);
+    state.completed[`${state.levelIndex}:${currentWord.word}`] = true;
+    saveState();
+    grantXP(20);
+    // small delay then next word
+    setTimeout(()=> { pickWord(); }, 800);
   }
-}
 
-function hintWord(){
-  if(!currentWord) return;
-  const empties = Array.from(wbSlots.children).filter(s => !s.textContent);
-  if(!empties.length) return;
-  const slot = empties[0];
-  const idx = Number(slot.dataset.pos);
-  const letter = currentWord.word[idx];
-  const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === letter && c.dataset.used === 'false');
-  if(chip) placeChipToFirstEmpty(chip);
-}
+  function hintWord(){
+    if(!currentWord) return;
+    const emptySlots = Array.from(slots.children).filter(s => !s.textContent);
+    if(!emptySlots.length) return;
+    const slot = emptySlots[0];
+    const idx = Number(slot.dataset.pos);
+    const needed = currentWord.word[idx];
+    const chip = Array.from(pool.children).find(c => c.textContent.toLowerCase() === needed && c.dataset.used === 'false');
+    if(chip) placeChipToEmpty(chip);
+  }
 
-/* ------------------- Sentence Builder ------------------- */
-let sentenceActive = null;
-function pickSentence(){
-  currentSentence = SENTENCES[Math.floor(Math.random()*SENTENCES.length)];
-  sbSlots.innerHTML = ''; sbPool.innerHTML = ''; sbMsg.textContent = '';
-  currentSentence.forEach(()=> {
-    const slot = document.createElement('div'); slot.className = 'sentence-slot';
-    slot.addEventListener('dragover', e => e.preventDefault());
-    slot.addEventListener('drop', e => {
-      const word = e.dataTransfer.getData('text/plain');
-      e.currentTarget.textContent = word;
-      const chip = Array.from(sbPool.children).find(c => c.textContent === word && c.dataset.used !== 'true');
-      if(chip){ chip.dataset.used = 'true'; chip.disabled = true; }
+  // ---------- SENTENCE BUILDER ----------
+  let currentSentence = null;
+  function pickSentence(){
+    currentSentence = SENTENCES[Math.floor(Math.random()*SENTENCES.length)];
+    sSlots.innerHTML = ''; sPool.innerHTML = ''; sFeedback.textContent = '';
+    currentSentence.forEach(()=> {
+      const s = document.createElement('div'); s.className = 'slot';
+      s.addEventListener('dragover', e => e.preventDefault());
+      s.addEventListener('drop', e => {
+        const w = e.dataTransfer.getData('text/plain'); e.currentTarget.textContent = w;
+        const chip = Array.from(sPool.children).find(c => c.textContent === w && c.dataset.used !== 'true');
+        if(chip) { chip.dataset.used = 'true'; chip.disabled = true; }
+      });
+      s.addEventListener('click', ()=> {
+        if(s.textContent){
+          const w = s.textContent; s.textContent = '';
+          const chip = Array.from(sPool.children).find(c => c.textContent === w && c.dataset.used === 'true');
+          if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
+        }
+      });
+      sSlots.appendChild(s);
     });
-    slot.addEventListener('click', ()=> {
-      if(slot.textContent){
-        const w = slot.textContent;
-        slot.textContent = '';
-        const chip = Array.from(sbPool.children).find(c => c.textContent === w && c.dataset.used === 'true');
-        if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
-      }
+    shuffle(currentSentence).forEach(w => {
+      const b = document.createElement('button'); b.className = 'word-tile'; b.textContent = w; b.draggable = true; b.dataset.used = 'false';
+      b.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', w));
+      b.addEventListener('click', ()=> {
+        const empty = Array.from(sSlots.children).find(s => !s.textContent); if(!empty) return;
+        empty.textContent = w; b.dataset.used = 'true'; b.disabled = true;
+      });
+      sPool.appendChild(b);
     });
-    sbSlots.appendChild(slot);
+  }
+
+  function checkSentence(){
+    const built = Array.from(sSlots.children).map(s => s.textContent || '').join(' ');
+    if(built === currentSentence.join(' ')){
+      sFeedback.textContent = '🎉 Correct! +15 XP'; beep(880,0.08); speak(built); grantXP(15); pickSentence();
+    } else {
+      sFeedback.textContent = 'Try again!';
+      beep(220,0.08);
+    }
+  }
+
+  // ---------- RHYMING ----------
+  let currentRhyme = null;
+  function pickRhyme(){
+    currentRhyme = RHYMES[Math.floor(Math.random()*RHYMES.length)];
+    rhymeTarget.textContent = `Which word rhymes with "${currentRhyme.target}"?`;
+    rhymeChoices.innerHTML = ''; rhymeFeedback.textContent = '';
+    shuffle(currentRhyme.options).forEach(opt => {
+      const b = document.createElement('button'); b.className = 'rhyme-choice'; b.textContent = opt;
+      b.addEventListener('click', ()=> {
+        if(opt === currentRhyme.answer){
+          rhymeFeedback.textContent = '🎉 Correct! +15 XP'; beep(880,0.08); grantXP(15); pickRhyme();
+        } else { rhymeFeedback.textContent = 'Try again!'; beep(220,0.06); }
+      });
+      rhymeChoices.appendChild(b);
+    });
+  }
+
+  // ---------- ACHIEVEMENTS ----------
+  function renderAchievements(){
+    achList.innerHTML = '';
+    const items = [
+      {id:'first_word',label:'First Word',desc:'Complete your first word',done: Boolean(state.achievements.first_word)},
+      {id:'level_complete',label:'Complete a Level',desc:'Finish 10 words in a level',done: Boolean(state.achievements.level_complete)},
+      {id:'xp_100',label:'100 XP',desc:'Earn 100 XP total (accumulated)',done: Boolean(state.achievements.xp_100)}
+    ];
+    items.forEach(it => {
+      const d = document.createElement('div'); d.className = 'ach';
+      d.innerHTML = `<div>${it.label}</div><small>${it.desc}</small><div>${it.done? '🏅':'🔒'}</div>`;
+      achList.appendChild(d);
+    });
+  }
+
+  // ---------- REWARD OVERLAY & CONFETTI ----------
+  function showReward(text='Great job!'){
+    rewardText.textContent = text; rewardOverlay.classList.remove('hidden'); rewardOverlay.style.pointerEvents = 'auto';
+    runConfetti(confettiCanvas);
+  }
+  function hideReward(){
+    rewardOverlay.classList.add('hidden'); rewardOverlay.style.pointerEvents = 'none'; // allow clicks again
+  }
+
+  function runConfetti(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const pieces = []; for(let i=0;i<160;i++){ pieces.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-200,dx:(Math.random()-0.5)*3,dy:Math.random()*4+1,r:Math.random()*6+2,color:`hsl(${Math.random()*360},100%,50%)`});}
+    let raf;
+    function frame(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      pieces.forEach(p => { p.x += p.dx; p.y += p.dy; if(p.y > canvas.height) p.y = -20; ctx.fillStyle = p.color; ctx.fillRect(p.x,p.y,p.r,p.r*1.6); });
+      raf = requestAnimationFrame(frame);
+    }
+    frame(); setTimeout(()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); }, 5000);
+  }
+
+  // ---------- TWEMOJI HELPER ----------
+  function setEmoji(emoji, imgEl){
+    imgEl.alt = emoji;
+    try{
+      const cps = Array.from(emoji).map(c => c.codePointAt(0).toString(16));
+      imgEl.src = `https://twemoji.maxcdn.com/v/latest/72x72/${cps.join('-')}.png`;
+    }catch(e){ imgEl.src = ''; }
+  }
+
+  // ---------- BUTTON HOOKS ----------
+  document.getElementById('check-word').addEventListener('click', checkWord);
+  document.getElementById('hint-word').addEventListener('click', hintWord);
+  document.getElementById('shuffle-word').addEventListener('click', ()=> {
+    // shuffle pool UI
+    const letters = Array.from(pool.children).map(c => c.textContent);
+    pool.innerHTML = ''; shuffle(letters).forEach(l => {
+      const b = document.createElement('button'); b.className = 'letter-tile'; b.textContent = l; b.draggable = true; b.dataset.used = 'false';
+      b.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', l));
+      b.addEventListener('click', ()=> { if(b.dataset.used==='true') return; placeChipToEmpty(b); speak(b.textContent); });
+      pool.appendChild(b);
+    });
   });
-  shuffle(currentSentence).forEach(w => {
-    const chip = document.createElement('button'); chip.className = 'word-tile'; chip.textContent = w; chip.draggable = true; chip.dataset.used = 'false';
-    chip.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', w));
-    chip.addEventListener('click', ()=> {
-      const empty = Array.from(sbSlots.children).find(s => !s.textContent);
-      if(!empty) return;
-      empty.textContent = w; chip.dataset.used = 'true'; chip.disabled = true;
-    });
-    sbPool.appendChild(chip);
-  });
-}
 
-function checkSentence(){
-  const built = Array.from(sbSlots.children).map(s => s.textContent || '').join(' ');
-  if(built === currentSentence.join(' ')){
-    sbMsg.textContent = 'Great! +15 XP';
-    beep(880,0.08); speak(built);
-    updateXP(15);
-    pickSentence();
-  } else {
-    sbMsg.textContent = 'Try again!';
-    beep(220,0.06);
-  }
-}
+  document.getElementById('check-sentence').addEventListener('click', checkSentence);
+  document.getElementById('new-sentence').addEventListener('click', pickSentence);
 
-/* ------------------- Rhyming Game ------------------- */
-function pickRhyme(){
-  currentRhyme = RHYMES[Math.floor(Math.random()*RHYMES.length)];
-  rgTarget.textContent = `Which word rhymes with "${currentRhyme.target}"?`;
-  rgChoices.innerHTML = ''; rgMsg.textContent = '';
-  shuffle(currentRhyme.options).forEach(opt => {
-    const b = document.createElement('button'); b.className = 'rhyme-choice'; b.textContent = opt;
-    b.addEventListener('click', ()=> {
-      if(opt === currentRhyme.answer){
-        rgMsg.textContent = 'Nice! +15 XP';
-        beep(880,0.08); updateXP(15);
-        pickRhyme();
-      } else {
-        rgMsg.textContent = 'Try again!';
-        beep(220,0.06);
-      }
-    });
-    rgChoices.appendChild(b);
-  });
-}
+  // menu button returns to menu
+  document.getElementById('menu-btn').addEventListener('click', ()=> navigateTo('menu'));
 
-/* ------------------- Reward modal & confetti ------------------- */
-function showReward(text='You completed the learning path!'){
-  $('#reward-text').textContent = text;
-  rewardModal.classList.remove('hidden'); rewardModal.querySelector('canvas#confetti').width = window.innerWidth; rewardModal.querySelector('canvas#confetti').height = window.innerHeight;
-  runConfetti(rewardModal.querySelector('canvas#confetti'));
-}
+  // close reward overlay by clicking OK
+  document.getElementById('close-reward').addEventListener('click', hideReward);
 
-function runConfetti(canvas){
-  const ctx = canvas.getContext('2d'); const w = canvas.width, h = canvas.height;
-  const pieces = [];
-  for(let i=0;i<200;i++) pieces.push({x:Math.random()*w, y:Math.random()*h, r:Math.random()*5+2, dx:(Math.random()-0.5)*2, dy:Math.random()*3+1, color:`hsl(${Math.random()*360},100%,60%)`});
-  let raf;
-  function frame(){
-    ctx.clearRect(0,0,w,h);
-    pieces.forEach(p => { p.x += p.dx; p.y += p.dy; if(p.y>h) p.y = -10; ctx.beginPath(); ctx.fillStyle = p.color; ctx.fillRect(p.x,p.y,p.r,p.r*1.8); });
-    raf = requestAnimationFrame(frame);
-  }
-  frame();
-  setTimeout(()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,w,h); }, 5000);
-}
-
-/* ------------------- small UX & keyboard ------------------- */
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') {
-    // close profile or reward
-    if(!$('#profile-modal').classList.contains('hidden')) closeProfile();
-    if(!$('#reward').classList.contains('hidden')) { $('#reward').classList.add('hidden'); }
-  }
-  if(/^([a-zA-Z])$/.test(e.key)){
-    // try to place letter in word builder
-    const c = e.key.toLowerCase();
-    if(!wbPool.children.length) return;
-    const chip = Array.from(wbPool.children).find(ch => ch.textContent.toLowerCase() === c && ch.dataset.used === 'false');
-    if(chip) placeChipToFirstEmpty(chip);
-  }
-  if(e.key === 'Backspace'){
-    // remove last filled slot in builder
-    const filled = Array.from(wbSlots.children).filter(s => s.textContent);
-    if(filled.length){
-      const last = filled[filled.length-1]; const letter = last.textContent; last.textContent = ''; last.classList.remove('filled');
-      const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'true');
+  // keyboard support: type letters to place them, Backspace to remove last
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){ hideReward(); navigateTo('menu'); }
+    if(/^[a-zA-Z]$/.test(e.key) && screens.word && !screens.word.classList.contains('hidden')){
+      const key = e.key.toLowerCase();
+      const chip = Array.from(pool.children).find(c => c.textContent.toLowerCase() === key && c.dataset.used === 'false');
+      if(chip) placeChipToEmpty(chip);
+    }
+    if(e.key === 'Backspace' && !screens.word.classList.contains('hidden')){
+      const filled = Array.from(slots.children).filter(s => s.textContent);
+      if(!filled.length) return;
+      const last = filled[filled.length-1];
+      const letter = last.textContent; last.textContent = ''; last.classList.remove('filled');
+      const chip = Array.from(pool.children).find(c => c.textContent.toLowerCase() === letter.toLowerCase() && c.dataset.used === 'true');
       if(chip){ chip.dataset.used = 'false'; chip.disabled = false; }
     }
+  });
+
+  // ---------- INIT ----------
+  function init(){
+    // default state cleanup
+    state = Object.assign({}, initial, JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'));
+    updateXPUI();
+    renderPath();
+    renderAchievements();
+    renderLetters();
+    pickWord();
+    pickSentence();
+    pickRhyme();
+    navigateTo('menu');
   }
-});
 
-/* ------------------- Initial render & event wiring ------------------- */
-function setPic(emoji, imgEl){
-  imgEl.alt = emoji;
-  try{
-    const cps = Array.from(emoji).map(c => c.codePointAt(0).toString(16));
-    imgEl.src = `https://twemoji.maxcdn.com/v/latest/72x72/${cps.join('-')}.png`;
-  }catch(e){ imgEl.src = ''; }
-}
-
-function wireEvents(){
-  // menu nav
-  $$('.menu-btn').forEach(b => b.addEventListener('click', ()=> {
-    const target = b.dataset.screen;
-    showScreen($('#' + target));
-    if(target === 'letters'){ renderLetters(); }
-    if(target === 'word-builder'){ pickWord(); }
-    if(target === 'sentence-builder'){ pickSentence(); }
-    if(target === 'rhyming'){ pickRhyme(); }
-    if(target === 'path') { renderPath(); }
-    if(target === 'achievements'){ renderAchievements(); }
-  }));
-  $$('.back-btn').forEach(b => b.addEventListener('click', ()=> showScreen(menuScreen) ));
-  $('#open-profile').addEventListener('click', openProfile);
-  $('#close-profile').addEventListener('click', closeProfile);
-  $('#save-profile').addEventListener('click', saveProfile);
-  $('#save-profile').addEventListener('click', ()=> { beep(1000,0.06); });
-
-  // word builder controls
-  $('#wb-check').addEventListener('click', checkWord);
-  $('#wb-hint').addEventListener('click', hintWord);
-  $('#wb-shuffle').addEventListener('click', ()=> {
-    const letters = Array.from(wbPool.children).map(c => c.textContent);
-    wbPool.innerHTML = '';
-    shuffle(letters).forEach(l => {
-      const chip = document.createElement('button'); chip.className = 'letter-tile'; chip.textContent = l; chip.draggable = true; chip.dataset.used = 'false';
-      chip.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', l));
-      chip.addEventListener('click', ()=> { if(chip.dataset.used==='true') return; placeChipToFirstEmpty(chip); speak(chip.textContent); });
-      wbPool.appendChild(chip);
-    });
-  });
-
-  // sentence & rhyme controls
-  $('#sb-check').addEventListener('click', checkSentence);
-  $('#sb-new').addEventListener('click', pickSentence);
-
-  // reward modal
-  $('#reward-ok').addEventListener('click', ()=> { $('#reward').classList.add('hidden'); });
-
-  // profile modal save/close
-  $('#save-profile').addEventListener('click', ()=> { renderAvatar(); });
-  $('#restart-btn')?.addEventListener('click', ()=> {
-    // restart progress
-    state.levelIndex = 0; state.xp = 0; state.completedWords = {}; state.achievements = {}; save();
-    renderPath(); pickWord(); pickSentence(); pickRhyme(); $('#reward').classList.add('hidden');
-  });
-}
-
-function renderLetters(){
-  letterGrid.innerHTML = '';
-  const letters = 'abcdefghijklmnopqrstuvwxyz';
-  [...letters].forEach(l => {
-    const d = document.createElement('div'); d.className = 'letter'; d.textContent = l.toUpperCase();
-    d.addEventListener('click', ()=> { speak(`The letter ${l}`); const chip = Array.from(wbPool.children).find(c => c.textContent.toLowerCase() === l && c.dataset.used === 'false'); if(chip) placeChipToFirstEmpty(chip); });
-    letterGrid.appendChild(d);
-  });
-}
-
-function renderAchievements(){
-  const box = $('#ach-list'); box.innerHTML = '';
-  const all = [
-    {id:'first_word',label:'First Word',desc:'Complete your first word',done: !!state.achievements.first_word},
-    {id:'ten_xp',label:'10 XP',desc:'Gain 10 XP',done: state.xp>=10 || !!state.achievements.ten_xp},
-    {id:'complete_level',label:'Complete a Level',desc:'Finish all 10 words in a level',done: !!state.achievements.complete_level}
-  ];
-  all.forEach(a => {
-    const c = document.createElement('div'); c.className = 'achie'; c.innerHTML = `<div>${a.label}</div><small>${a.desc}</small><div>${a.done ? '✅' : '🔒'}</div>`;
-    box.appendChild(c);
-  });
-}
-
-/* ------------------- Start ------------------- */
-(function init(){
-  renderAvatar();
-  renderPath();
-  renderLetters();
-  wireEvents();
-  showScreen(menuScreen);
-  pickWord();
-  pickSentence();
-  pickRhyme();
-  // show initial xp
-  xpBar.style.width = (state.xp||0) + '%';
-  xpText.textContent = `XP: ${state.xp||0}`;
+  // helpers to tie existing functions with closure names used above
+  function grantXP(amount){ grantXP_internal(amount); } // wrapper placeholder (internal function name below)
+  // implement grantXP_internal: reuse grantXP defined above (we named grantXP earlier). We already have grantXP function defined in this closure.
+  function grantXP_internal(amount){ grantXP(amount); } // forwards
+  // we used grantXP in several places - ensure it's available in closure
+  // start
+  init();
+  // expose some for debugging (optional)
+  window.RP = { state, pickWord, pickSentence, pickRhyme, navigateTo, grantXP };
 })();
