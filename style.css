@@ -1,21 +1,76 @@
 body {
-  margin:0; font-family:sans-serif; background:#f9f9f9;
+  font-family: Arial, sans-serif;
+  background: #f7f1e3;
+  text-align: center;
+  padding: 20px;
 }
-header {display:flex; justify-content:space-between; align-items:center; padding:10px 20px; background:#ffd700;}
-header h1 {margin:0; font-size:1.5em;}
-#mascot {font-size:2em;}
-.screen {display:block; padding:20px;}
-.hidden {display:none;}
-.menu-grid {display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:20px;}
-.menu-btn {padding:15px; font-size:1em; background:#fff; border:2px solid #ffd700; border-radius:8px; cursor:pointer;}
-.nav-back {margin-bottom:10px;}
-.slots {display:flex; gap:10px; margin:10px 0;}
-.slot {width:50px; height:50px; border:2px dashed #ccc; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#fff;}
-.pool {display:flex; gap:10px; flex-wrap:wrap;}
-.pool-btn {padding:10px; border:2px solid #ffd700; border-radius:6px; background:#fff; cursor:pointer;}
-.controls {margin-top:10px;}
-.action {background:#ffd700; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;}
-.ghost {background:#fff; border:2px solid #ccc; padding:8px 15px; border-radius:6px; cursor:pointer;}
-.muted {color:#666;}
-.path-nodes, .ach-list {display:flex; gap:10px; flex-wrap:wrap;}
-.path-node, .ach-item {padding:8px 12px; border:2px solid #ccc; border-radius:6px; background:#fff;}
+
+.title {
+  font-size: 2.2rem;
+  margin-bottom: 15px;
+}
+
+#bubba img {
+  width: 150px;
+  margin-bottom: 20px;
+}
+
+.instruction {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+#letter-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 auto 25px;
+}
+
+.letter {
+  width: 55px;
+  height: 55px;
+  background: #ffeaa7;
+  border: 3px solid #fdcb6e;
+  border-radius: 10px;
+  font-size: 1.7rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: grab;
+  transition: transform 0.2s;
+}
+
+.letter:active {
+  cursor: grabbing;
+}
+
+#picture-area {
+  height: 150px;
+  margin-bottom: 25px;
+}
+
+#picture {
+  width: 150px;
+  display: none;
+}
+
+#drop-zone {
+  width: 300px;
+  height: 180px;
+  background: #dfe6e9;
+  border: 3px dashed #636e72;
+  border-radius: 15px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+}
+
+#drop-zone.hover {
+  background: #b2bec3;
+}
