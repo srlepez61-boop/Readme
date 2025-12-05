@@ -2,68 +2,135 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Read & Play</title>
+  <title>Read & Play — Full Rebuild</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Read & Play</h1>
+  <div id="app">
+    <header>
+      <h1>Read & Play</h1>
+      <div id="top-controls">
+        <div id="xp-wrap">
+          <div id="xp-bar"></div>
+          <div id="xp-text">XP: 0</div>
+        </div>
+        <button id="open-profile" class="small">Profile</button>
+      </div>
+    </header>
 
-  <!-- XP BAR -->
-  <div id="xp-container">
-    <div id="xp-bar"></div>
-    <span id="xp-text">XP: 0</span>
-  </div>
+    <!-- MAIN MENU -->
+    <main id="menu" class="screen">
+      <div class="menu-grid">
+        <button class="menu-btn" data-screen="letters">Letters</button>
+        <button class="menu-btn" data-screen="word-builder">Word Builder</button>
+        <button class="menu-btn" data-screen="sentence-builder">Sentence Builder</button>
+        <button class="menu-btn" data-screen="rhyming">Rhyming Game</button>
+        <button class="menu-btn" data-screen="path">Learning Path</button>
+        <button class="menu-btn" data-screen="achievements">Achievements</button>
+      </div>
+      <div id="avatar-preview" aria-hidden="false"></div>
+    </main>
 
-  <!-- LEARNING PATH -->
-  <section id="learning-path">
-    <h2>Learning Path</h2>
-    <div id="path"></div>
-  </section>
+    <!-- LETTERS -->
+    <section id="letters" class="screen hidden">
+      <button class="back-btn">← Back</button>
+      <h2>Letters — Tap to hear</h2>
+      <div class="letter-grid" aria-hidden="false"></div>
+    </section>
 
-  <!-- LETTER SOUNDS -->
-  <section id="letters">
-    <h2>Tap a letter to hear its sound</h2>
-    <div class="letter-grid" aria-hidden="false"></div>
-  </section>
+    <!-- WORD BUILDER -->
+    <section id="word-builder" class="screen hidden">
+      <button class="back-btn">← Back</button>
+      <h2>Word Builder</h2>
+      <div class="builder-top">
+        <img id="wb-pic" alt="word pic" />
+        <div id="wb-msg" class="muted">Drag or tap letters to build the word</div>
+      </div>
+      <div id="wb-slots" class="slots"></div>
+      <div id="wb-pool" class="pool"></div>
+      <div class="controls">
+        <button id="wb-check">Check</button>
+        <button id="wb-hint">Hint</button>
+        <button id="wb-shuffle">Shuffle</button>
+      </div>
+    </section>
 
-  <!-- WORD BUILDER -->
-  <section id="word-builder">
-    <h2>Build the word</h2>
-    <img id="pic" src="" alt="picture" />
-    <div id="slots" aria-label="word slots"></div>
-    <div id="letters-pool" aria-label="letters pool"></div>
-    <div class="controls">
-      <button id="check-btn">Check</button>
-      <button id="shuffle-btn">Shuffle</button>
-      <button id="hint-btn">Hint</button>
+    <!-- SENTENCE BUILDER -->
+    <section id="sentence-builder" class="screen hidden">
+      <button class="back-btn">← Back</button>
+      <h2>Sentence Builder</h2>
+      <div id="sb-prompt" class="muted">Arrange words to make the sentence</div>
+      <div id="sb-slots" class="slots"></div>
+      <div id="sb-pool" class="pool"></div>
+      <div class="controls">
+        <button id="sb-check">Check</button>
+        <button id="sb-new">New</button>
+      </div>
+      <div id="sb-msg" class="muted"></div>
+    </section>
+
+    <!-- RHYMING -->
+    <section id="rhyming" class="screen hidden">
+      <button class="back-btn">← Back</button>
+      <h2>Rhyming Game</h2>
+      <div id="rg-target" class="muted"></div>
+      <div id="rg-choices" class="pool"></div>
+      <div id="rg-msg" class="muted"></div>
+    </section>
+
+    <!-- PATH -->
+    <section id="path" class="screen hidden">
+      <button class="back-btn">← Back</button>
+      <h2>Learning Path</h2>
+      <div id="path-nodes"></div>
+      <div id="path-status" class="muted"></div>
+    </section>
+
+    <!-- ACHIEVEMENTS -->
+    <section id="achievements" class="screen hidden">
+      <button class="back-btn">← Back</button>
+      <h2>Achievements</h2>
+      <div id="ach-list" class="grid"></div>
+    </section>
+
+    <!-- PROFILE MODAL -->
+    <div id="profile-modal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h3>Profile</h3>
+        <div id="avatar-customize">
+          <label>Pick color: <input type="color" id="avatar-color" value="#ffb300"></label>
+          <label>Hat:
+            <select id="avatar-hat">
+              <option value="none">None</option>
+              <option value="cap">Cap</option>
+              <option value="star">Star</option>
+            </select>
+          </label>
+        </div>
+        <div class="modal-row">
+          <button id="save-profile">Save</button>
+          <button id="close-profile" class="ghost">Close</button>
+        </div>
+      </div>
     </div>
-    <p id="msg"></p>
-  </section>
 
-  <!-- SENTENCE BUILDER -->
-  <section id="sentence-builder">
-    <h2>Build the sentence</h2>
-    <div id="sentence-slots" aria-label="sentence slots"></div>
-    <div id="sentence-pool" aria-label="sentence pool"></div>
-    <button id="check-sentence-btn">Check</button>
-    <p id="sentence-msg"></p>
-  </section>
+    <!-- REWARD SCREEN -->
+    <div id="reward" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h2>🎉 Well done!</h2>
+        <p id="reward-text">You completed the learning path.</p>
+        <canvas id="confetti"></canvas>
+        <div class="modal-row">
+          <button id="reward-ok">OK</button>
+        </div>
+      </div>
+    </div>
 
-  <!-- RHYMING GAME -->
-  <section id="rhyming-game">
-    <h2>Rhyming game</h2>
-    <p id="rhyming-target"></p>
-    <div id="rhyming-choices"></div>
-    <p id="rhyme-msg"></p>
-  </section>
-
-  <!-- REWARD SCREEN -->
-  <div id="reward-screen" class="hidden" aria-hidden="true">
-    <h2>🏆 Congratulations!</h2>
-    <p>You completed all levels!</p>
-    <canvas id="confetti"></canvas>
-    <button id="restart-btn">Restart</button>
+    <footer>
+      <small>Built with ❤️ — Read & Play</small>
+    </footer>
   </div>
 
   <script src="app.js"></script>
