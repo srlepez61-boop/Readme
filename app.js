@@ -302,6 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+document.getElementById("sentence-emoji").textContent = emoji;
 
   /* ---------------------------------------------------
    * SENTENCE BUILDER
