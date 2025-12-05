@@ -26,14 +26,16 @@ document.addEventListener("DOMContentLoaded", () => {
    * --------------------------------------------------- */
   let xp = 0;
   let maxLevelReached = 1;
+  const PATH_MAX = 10; // 🔧 cap path at 10 nodes
 
   const xpBar = document.getElementById("xp-bar-inner");
   const xpText = document.getElementById("xp-text");
 
   function updateXPUI() {
     if (!xpBar || !xpText) return;
-    xpBar.style.width = xp + "%";
-    xpText.textContent = `${xp} / 100`;
+    const clamped = Math.min(100, Math.max(0, xp)); // 🔧 ensure valid
+    xpBar.style.width = clamped + "%";
+    xpText.textContent = `${clamped} / 100`;
   }
 
   function addXP(amount = 5) {
@@ -43,8 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function markLevelCompleted(levelNum) {
-    if (levelNum > maxLevelReached) {
-      maxLevelReached = levelNum;
+    // 🔧 clamp tracing & other game levels
+    const clamped = Math.min(levelNum, PATH_MAX);
+    if (clamped > maxLevelReached) {
+      maxLevelReached = clamped;
       renderPathMap();
       renderAchievements();
     }
@@ -209,8 +213,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderWordLevel() {
     if (!wordTarget || !wordSlots || !wordPool || !wordFeedback) return;
-    const word = WORD_LEVELS[wordLevelIndex];
 
+    const word = WORD_LEVELS[wordLevelIndex];
     wordTarget.textContent = `Build the word: ${word}`;
     wordSlots.innerHTML = "";
     wordPool.innerHTML = "";
@@ -224,13 +228,16 @@ document.addEventListener("DOMContentLoaded", () => {
       wordSlots.appendChild(slot);
     }
 
-    // Pool letters
+    // safer pool-size logic 🔧
     const baseLetters = word.split("");
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    const maxPool = 6;
+    const extraCount = Math.max(0, maxPool - baseLetters.length);
+
     const extras = alphabet
       .filter(c => !baseLetters.includes(c))
       .sort(() => Math.random() - 0.5)
-      .slice(0, 6 - baseLetters.length);
+      .slice(0, extraCount);
 
     const poolLetters = [...baseLetters, ...extras].sort(
       () => Math.random() - 0.5
@@ -248,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wordPool.appendChild(token);
     });
 
+    // slot listeners
     wordSlots.querySelectorAll(".slot").forEach(slot => {
       slot.addEventListener("dragover", e => e.preventDefault());
       slot.addEventListener("drop", e => {
@@ -260,8 +268,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     });
+  }
 
-    // allow dragging back to pool
+  // 🔧 Word pool listeners attached ONCE
+  if (wordPool) {
     wordPool.addEventListener("dragover", e => e.preventDefault());
     wordPool.addEventListener("drop", e => {
       e.preventDefault();
@@ -378,7 +388,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     });
+  }
 
+  // 🔧 Sentence pool listeners attached ONCE
+  if (sentPool) {
     sentPool.addEventListener("dragover", e => e.preventDefault());
     sentPool.addEventListener("drop", e => {
       e.preventDefault();
@@ -506,7 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------------------------------------------------
-   * TRACING GAME (A–Z and a–z)
+   * TRACING GAME
    * --------------------------------------------------- */
   const TRACING_CHARS = [
     ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -540,7 +553,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const w = traceCanvas.width;
     const h = traceCanvas.height;
 
-    // faint background letter
     ctx.save();
     ctx.globalAlpha = 0.13;
     ctx.font = "260px Arial";
@@ -550,7 +562,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.fillText(char, w / 2, h / 2);
     ctx.restore();
 
-    // animated outline
     let alpha = 0;
     function step() {
       ctx.save();
@@ -603,6 +614,8 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       speak(`Great tracing of ${char}!`);
       addXP(7);
+
+      // 🔧 clamped automatically by markLevelCompleted
       markLevelCompleted(traceIndex + 1);
     }
   }
@@ -756,7 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderPathMap() {
     if (!pathMap) return;
     pathMap.innerHTML = "";
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= PATH_MAX; i++) {
       const node = document.createElement("div");
       node.className = "path-node";
       if (i <= maxLevelReached) node.style.background = "#7dd37d";
@@ -764,7 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
       pathMap.appendChild(node);
     }
     if (pathStatus) {
-      pathStatus.textContent = `Highest level reached so far: ${maxLevelReached} / 10`;
+      pathStatus.textContent = `Highest level reached so far: ${maxLevelReached} / ${PATH_MAX}`;
     }
   }
 
